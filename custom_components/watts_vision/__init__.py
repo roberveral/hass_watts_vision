@@ -1,11 +1,10 @@
 """The Watts Vision integration."""
 
-from dataclasses import dataclass
 import logging
 
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .pywatts import WattsVisionClient
@@ -13,10 +12,23 @@ from .pywatts.auth import WattsCredentials
 
 from .coordinator import WattsVisionCoordinator
 from .types import WattsData, WattsVisionConfigEntry
+from .services import async_register_services
 
 PLATFORMS = [Platform.CLIMATE, Platform.SENSOR, Platform.BINARY_SENSOR]
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up the Watts Vision component."""
+    
+    _LOGGER.debug("Initializing Watts Vision integration.")
+
+    # Register the services.
+    async_register_services(hass)
+
+    return True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry) -> bool:
     """Configures the Watts Vision integration from a config entry."""

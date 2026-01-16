@@ -13,6 +13,7 @@ from homeassistant.const import ATTR_TEMPERATURE
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import IntegrationError
+from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .types import WattsVisionConfigEntry
 from .const import (
@@ -250,6 +251,61 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
 
         await self._async_notify_command_sent()
     
+
+    async def async_set_temperature_setting(
+            self,
+            temperature_comfort: float | None = None,
+            temperature_eco: float | None = None,
+            temperature_boost: float | None = None,
+            temperature_antifreeze: float | None = None,
+            temperature_manual: float | None = None
+        ):
+        """Set new temperature settings for the thermostat."""
+
+        user_unit: UnitOfTemperature = self.hass.config.units.temperature_unit
+
+        settings_to_update: dict[TemperatureSetting, float] = {}
+        if temperature_comfort is not None:
+            settings_to_update[TemperatureSetting.COMFORT] = clamp(
+                TemperatureConverter.convert(temperature_comfort, user_unit, self.temperature_unit),
+                self.min_temp, 
+                self.max_temp
+            )
+        if temperature_eco is not None:
+            settings_to_update[TemperatureSetting.ECO] = clamp(
+                TemperatureConverter.convert(temperature_eco, user_unit, self.temperature_unit), 
+                self.min_temp, 
+                self.max_temp
+            )
+        if temperature_boost is not None:
+            settings_to_update[TemperatureSetting.BOOST] = clamp(
+                TemperatureConverter.convert(temperature_boost, user_unit, self.temperature_unit), 
+                self.min_temp, 
+                self.max_temp
+            )
+        if temperature_antifreeze is not None:
+            settings_to_update[TemperatureSetting.ANTI_FREEZE] = clamp(
+                TemperatureConverter.convert(temperature_antifreeze, user_unit, self.temperature_unit), 
+                self.min_temp, 
+                self.max_temp
+            )
+        if temperature_manual is not None:
+            settings_to_update[TemperatureSetting.MANUAL] = clamp(
+                TemperatureConverter.convert(temperature_manual, user_unit, self.temperature_unit), 
+                self.min_temp, 
+                self.max_temp
+            )
+
+        _LOGGER.debug(f"Setting temperature settings: {settings_to_update} for thermostat entity {self.id}.")
+
+        await self.client.change_device_temperature_settings(
+            self.smart_home_id,
+            self.device_id,
+            settings_to_update,
+        )
+
+        await self._async_notify_command_sent()
+
 
     async def _async_notify_command_sent(self):
         """Record the time when a command was sent to the API."""

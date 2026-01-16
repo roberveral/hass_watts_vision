@@ -46,5 +46,33 @@
     "invalid_hvac_transition": {
       "message": "No se puede cambiar al modo HVAC solicitado ({hvac_mode}) desde la configuración actual del sistema ({hvac_setting})."
     }
+  },
+  "services": {
+    "set_temperature_setting": {
+      "name": "Establecer Configuración de Temperatura",
+      "description": "Establece un valor de configuración de temperatura de un termostato Watts Vision.",
+      "fields": {
+        "temperature_comfort": {
+          "name": "Temperatura de Confort",
+          "description": "El valor de temperatura a establecer en la configuración."
+        },
+        "temperature_eco": {
+          "name": "Temperatura Eco",
+          "description": "El valor de temperatura a establecer en la configuración."
+        },
+        "temperature_boost": {
+          "name": "Temperatura de Impulso",
+          "description": "El valor de temperatura a establecer en la configuración."
+        },
+        "temperature_antifreeze": {
+          "name": "Temperatura Antihielo",
+          "description": "El valor de temperatura a establecer en la configuración."
+        },
+        "temperature_manual": {
+          "name": "Temperatura Manual",
+          "description": "El valor de temperatura a establecer en la configuración."
+        }
+      }
+    }
   }
 }

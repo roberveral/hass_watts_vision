@@ -1,0 +1,70 @@
+set_temperature_setting:
+  # name: "Set Temperature Setting"
+  # description: "Set a temperature setting value of a Watts Vision thermostat."
+  
+  target:
+    entity:
+      integration: watts_vision
+      domain: climate
+
+  # Different fields that your service action accepts
+  fields:
+    temperature_comfort:
+      # name: "Comfort Temperature"
+      # description: "The temperature value to set in the setting."
+      required: false
+      selector:
+        number:
+          min: 7
+          max: 95
+          step: 0.5
+          mode: box
+      example: 21.5
+    
+    temperature_eco:
+      # name: "Eco Temperature"
+      # description: "The eco temperature value to set in the setting."
+      required: false
+      selector:
+        number:
+          min: 7
+          max: 95
+          step: 0.5
+          mode: box
+      example: 18.0
+
+    temperature_boost:
+      # name: "Boost Temperature"
+      # description: "The temperature value to set in the setting."
+      required: false
+      selector:
+        number:
+          min: 7
+          max: 95
+          step: 0.5
+          mode: box
+      example: 21.5
+
+    temperature_antifreeze:
+      # name: "Antifreeze Temperature"
+      # description: "The temperature value to set in the setting."
+      required: false
+      selector:
+        number:
+          min: 7
+          max: 95
+          step: 0.5
+          mode: box
+      example: 7
+
+    temperature_manual:
+      # name: "Manual Temperature"
+      # description: "The temperature value to set in the setting."
+      required: false
+      selector:
+        number:
+          min: 7
+          max: 95
+          step: 0.5
+          mode: box
+      example: 7
