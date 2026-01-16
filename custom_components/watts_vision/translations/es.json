@@ -1,0 +1,50 @@
+{
+  "title": "Watts Vision",
+  "config": {
+    "error": {
+      "scan_interval_too_low": "Scan interval must be at least 300 seconds",
+      "scan_interval_too_high": "Scan interval must be at most 86400 seconds",
+      "missing_data": "We could not find the required data in your configuration",
+      "invalid_auth": "The combination of username and password is not valid",
+      "unknown_authentication_error": "An unknown error occurred while authenticating"
+    },
+    "step": {
+      "user": {
+        "title": "Autenticación",
+        "description": "Ingrese las credenciales de su cuenta Watts Vision",
+        "data": {
+          "username": "e-mail",
+          "password": "password"
+        }
+      },
+      "select_home": {
+        "title": "Seleccionar Hogar Inteligente",
+        "description": "Configure su Hogar Inteligente Watts Vision",
+        "data": {
+          "smart_home_id": "Hogar Inteligente"
+        }
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "scan_interval_too_low": "Scan interval must be at least 300 seconds",
+      "scan_interval_too_high": "Scan interval must be at most 86400 seconds"
+    },
+    "step": {
+      "user": {
+        "title": "Configuración",
+        "description": "Configure su integración Watts Vision",
+        "data": {
+          "scan_interval": "Intervalo de actualización",
+          "boost_duration": "Duración del 'boost'"
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_hvac_transition": {
+      "message": "No se puede cambiar al modo HVAC solicitado ({hvac_mode}) desde la configuración actual del sistema ({hvac_setting})."
+    }
+  }
+}

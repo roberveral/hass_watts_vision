@@ -1,0 +1,19 @@
+{
+  "domain": "watts_vision",
+  "name": "Watts Vision",
+  "version": "0.1.0",
+  "codeowners": [
+    "@roberveral"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.home-assistant.io/integrations/watts_vision",
+  "homekit": {},
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "quality_scale": "bronze",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "loggers": ["custom_components.watts_vision"]
+}

@@ -1,0 +1,261 @@
+from datetime import timedelta, datetime
+import logging
+import asyncio
+
+from homeassistant.components.climate import (
+    ClimateEntity,
+    ClimateEntityFeature,
+    HVACMode,
+    UnitOfTemperature,
+    HVACAction,
+)
+from homeassistant.const import ATTR_TEMPERATURE
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import IntegrationError
+
+from .types import WattsVisionConfigEntry
+from .const import (
+    DOMAIN,
+    MANUFACTURER,
+    THERMOSTAT_MODEL,
+    ALLOWED_HVAC_TRANSITIONS,
+    CONF_SMART_HOME_ID,
+    CONF_BOOST_DURATION,
+    DEFAULT_BOOST_DURATION,
+    ATTR_WATTS_HVAC_SETTING,
+    ATTR_WATTS_MODE,
+    ATTR_LAST_WATTS_MODE,
+    ATTR_WATTS_TARGET_TEMPERATURE_SETTING,
+    API_COMMAND_DELAY,
+)
+from .coordinator import WattsVisionCoordinator
+from .utils import clamp
+
+from .pywatts import WattsVisionClient
+from .pywatts.model import SmartHome, Mode, HVACSetting, Status, Device, TemperatureSetting
+
+_LOGGER = logging.getLogger(__name__)
+
+async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry, async_add_entities):
+    """Configures the CLIMATE platform for the Watts Vision integration."""
+    
+    _LOGGER.debug("Setting up climate entities for Watts Vision integration.")
+
+    # Retrieve the rutime data for this entry
+    coordinator = entry.runtime_data.coordinator
+
+    # Create climate entities for each thermostat device in the configured smart home
+    entities = []
+    for zone in coordinator.data.zones:
+        for device in zone.devices:
+            _LOGGER.debug(f"Found device {device.id} in zone {zone.label} for climate entity.")
+            entities.append(WattsThermostat(coordinator, entry, device.id, device.device_id, zone.label))
+    
+    async_add_entities(entities)
+
+
+class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
+
+    # _attr_has_entity_name = True
+    _attr_hvac_mode = HVACMode.HEAT
+    _attr_hvac_modes = [HVACMode.HEAT, HVACMode.COOL, HVACMode.OFF]
+    _attr_preset_mode = Mode.COMFORT.value
+    _attr_preset_modes = [mode.value for mode in Mode]
+    _attr_supported_features = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TURN_ON
+    _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
+    _attr_extra_state_attributes = {}
+
+    def __init__(
+        self, coordinator: WattsVisionCoordinator, config_entry: WattsVisionConfigEntry, id: str, device_id: str, zone_label: str
+    ):
+        super().__init__(coordinator)
+        self.client: WattsVisionClient = config_entry.runtime_data.client
+        self.config_entry: WattsVisionConfigEntry = config_entry
+        self.smart_home_id: str = config_entry.data[CONF_SMART_HOME_ID]
+        self.id: str = id
+        self.zone_label: str = zone_label
+        self.device_id: str = device_id
+        self._last_command_time: datetime | None = None
+
+        # Properties
+        self._attr_unique_id = "watts_thermostat_" + self.id
+        self._attr_name = self.zone_label + " Thermostat"
+
+        # Initialize state from coordinator data
+        self._update_data_from_coordinator()
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                # Serial numbers are unique identifiers within a specific domain
+                (DOMAIN, self.id)
+            },
+            "manufacturer": MANUFACTURER,
+            "name": "Thermostat " + self.zone_label,
+            "model": THERMOSTAT_MODEL,
+            "via_device": (DOMAIN, self.smart_home_id),
+            "suggested_area": self.zone_label,
+        }
+    
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+
+        if self._last_command_time and self._last_command_time + API_COMMAND_DELAY > datetime.now():
+            _LOGGER.debug(f"Skipping coordinator update for thermostat entity {self.id} due to recent command.")
+            return
+         
+        self._update_data_from_coordinator()
+        super()._handle_coordinator_update()
+    
+
+    def _update_data_from_coordinator(self):
+        """Update the entity's state based on the coordinator's data."""
+
+        data: SmartHome = self.coordinator.data
+
+        _LOGGER.debug(f"Updating thermostat entity {self.id} state from coordinator data: {data}")
+
+        device: Device = data.get_device_by_id(self.id)
+        if device is None:
+            _LOGGER.error(f"Device with ID {self.id} not found in Smart Home data.")
+            return
+        
+        # Update attributes based on device data
+        self._attr_current_temperature = device.current_temperature_air
+        self._attr_min_temp = device.min_set_point
+        self._attr_max_temp = device.max_set_point
+
+        # Determine HVAC Mode based on system setting
+        self._attr_hvac_mode = HVACMode.OFF
+        if device.mode != Mode.OFF:
+            if device.hvac_setting == HVACSetting.COOL:
+                self._attr_hvac_mode = HVACMode.COOL
+            else:
+                self._attr_hvac_mode = HVACMode.HEAT
+        
+        # Determine HVAC Action based on current status
+        self._attr_hvac_action = HVACAction.OFF
+        if device.status == Status.HEATING:
+            self._attr_hvac_action = HVACAction.HEATING
+        elif device.status == Status.COOLING:
+            self._attr_hvac_action = HVACAction.COOLING
+        elif device.status == Status.IDLE:
+            self._attr_hvac_action = HVACAction.IDLE
+        
+        # Determine Preset Mode
+        self._attr_preset_mode = device.mode.value
+        self._attr_target_temperature = device.target_temperature
+
+        # Extra data for future reference...
+        self.extra_state_attributes[ATTR_WATTS_HVAC_SETTING] = device.hvac_setting
+        self.extra_state_attributes[ATTR_WATTS_MODE] = device.mode
+        if device.mode != Mode.OFF:
+            self.extra_state_attributes[ATTR_LAST_WATTS_MODE] = device.mode
+        self.extra_state_attributes[ATTR_WATTS_TARGET_TEMPERATURE_SETTING] = device.target_temperature_setting
+    
+    
+    async def async_set_hvac_mode(self, hvac_mode: HVACMode):
+        """Set new target hvac mode."""
+
+        _LOGGER.debug(f"Setting HVAC mode to {hvac_mode} for thermostat entity {self.id}.")
+
+        hvac_setting: HVACSetting = self.extra_state_attributes.get(ATTR_WATTS_HVAC_SETTING)
+        
+        if hvac_mode not in ALLOWED_HVAC_TRANSITIONS.get(hvac_setting, []):
+            raise IntegrationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_hvac_transition",
+                translation_placeholders={
+                    "hvac_mode": hvac_mode,
+                    "hvac_setting": hvac_setting,
+                })
+        
+        mode: Mode = Mode.OFF if hvac_mode == HVACMode.OFF else self.extra_state_attributes.get(ATTR_LAST_WATTS_MODE, Mode.COMFORT)
+
+        await self.client.change_device_mode(
+            self.smart_home_id,
+            self.device_id,
+            mode,
+        )
+
+        await self._async_notify_command_sent()
+
+
+    async def async_turn_on(self):
+        """Turn the entity on."""
+
+        _LOGGER.debug(f"Turning on thermostat entity {self.id}.")
+
+        watts_hvac_setting: HVACSetting = self.extra_state_attributes.get(ATTR_WATTS_HVAC_SETTING)
+
+        if watts_hvac_setting == HVACSetting.COOL:
+            await self.async_set_hvac_mode(HVACMode.COOL)
+        else:
+            await self.async_set_hvac_mode(HVACMode.HEAT)
+
+
+    async def async_turn_off(self):
+        """Turn the entity off."""
+
+        _LOGGER.debug(f"Turning off thermostat entity {self.id}.")
+
+        await self.async_set_hvac_mode(HVACMode.OFF)
+
+
+    async def async_set_preset_mode(self, preset_mode):
+        """Set new target preset mode."""
+
+        _LOGGER.debug(f"Setting preset mode to {preset_mode} for thermostat entity {self.id}.")
+
+        extra_args = {}
+
+        # Handle boost mode duration from the configuration
+        if preset_mode == Mode.BOOST.value:
+            boost_time_settings = self.config_entry.options.get(CONF_BOOST_DURATION)
+            extra_args["boost_time"] = timedelta(**boost_time_settings) if boost_time_settings else DEFAULT_BOOST_DURATION
+
+        await self.client.change_device_mode(
+            self.smart_home_id,
+            self.device_id,
+            Mode(preset_mode),
+            **extra_args,
+        )
+
+        await self._async_notify_command_sent()
+
+
+    async def async_set_temperature(self, **kwargs):
+        """Set new target temperature."""
+
+        if ATTR_TEMPERATURE not in kwargs:
+            return
+
+        value: float = float(kwargs[ATTR_TEMPERATURE])
+        value = clamp(value, self.min_temp, self.max_temp)
+
+        target_temp_setting: TemperatureSetting = self.extra_state_attributes.get(ATTR_WATTS_TARGET_TEMPERATURE_SETTING)
+
+        _LOGGER.debug(f"Setting target temperature to {value} for thermostat entity {self.id}, using temperature setting {target_temp_setting}.")
+
+        await self.client.change_device_temperature_setting(
+            self.smart_home_id,
+            self.device_id,
+            target_temp_setting,
+            value,
+        )
+
+        await self._async_notify_command_sent()
+    
+
+    async def _async_notify_command_sent(self):
+        """Record the time when a command was sent to the API."""
+
+        self._last_command_time = datetime.now()
+
+        # Schedule a coordinator refresh after the command delay
+        await asyncio.sleep(API_COMMAND_DELAY.total_seconds())
+        await self.coordinator.async_request_refresh()
