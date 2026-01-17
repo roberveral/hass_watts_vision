@@ -30,4 +30,4 @@ ALLOWED_HVAC_TRANSITIONS = {
 
 # API Constants
 CLIENT_TIMEOUT: int = 10  # seconds
-API_COMMAND_DELAY: timedelta = timedelta(seconds=10)  # Delay after sending a command before next read
+API_COMMAND_EXPIRATION: timedelta = timedelta(seconds=20)  # Time before a sent command expires

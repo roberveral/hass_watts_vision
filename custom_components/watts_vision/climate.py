@@ -1,6 +1,5 @@
 from datetime import timedelta, datetime
 import logging
-import asyncio
 
 from homeassistant.components.climate import (
     ClimateEntity,
@@ -27,7 +26,7 @@ from .const import (
     ATTR_WATTS_MODE,
     ATTR_LAST_WATTS_MODE,
     ATTR_WATTS_TARGET_TEMPERATURE_SETTING,
-    API_COMMAND_DELAY,
+    API_COMMAND_EXPIRATION,
 )
 from .coordinator import WattsVisionCoordinator
 from .utils import clamp
@@ -79,6 +78,7 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
         self.zone_label: str = zone_label
         self.device_id: str = device_id
         self._last_command_time: datetime | None = None
+        self._last_device_state: Device | None = None
 
         # Properties
         self._attr_unique_id = "watts_thermostat_" + self.id
@@ -96,24 +96,31 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
 
-        if self._last_command_time and self._last_command_time + API_COMMAND_DELAY > datetime.now():
-            _LOGGER.debug(f"Skipping coordinator update for thermostat entity {self.id} due to recent command.")
-            return
-         
-        self._update_data_from_coordinator()
+        has_recent_command = self._last_command_time and self._last_command_time + API_COMMAND_EXPIRATION > datetime.now()
+
+        if has_recent_command:
+            _LOGGER.debug(f"Update for thermostat entity {self.id} in recent command grace period since {self._last_command_time}. Last device state: {self._last_device_state}")
+
+        self._update_data_from_coordinator(ignore_unchanged=has_recent_command)
         super()._handle_coordinator_update()
     
 
-    def _update_data_from_coordinator(self):
+    def _update_data_from_coordinator(self, ignore_unchanged: bool = False) -> None:
         """Update the entity's state based on the coordinator's data."""
 
         data: SmartHome = self.coordinator.data
 
-        _LOGGER.debug(f"Updating thermostat entity {self.id} state from coordinator data: {data}")
+        _LOGGER.debug(f"Updating thermostat entity {self.id} state from coordinator data")
 
         device: Device = data.get_device_by_id(self.id)
         if device is None:
             _LOGGER.error(f"Device with ID {self.id} not found in Smart Home data.")
+            return
+        
+        _LOGGER.debug(f"Thermostat entity {self.id} found device data: {device}")
+        
+        if ignore_unchanged and self._last_device_state == device:
+            _LOGGER.debug(f"No changes detected for thermostat entity {self.id}; skipping update.")
             return
         
         # Update attributes based on device data
@@ -148,6 +155,9 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
         if device.mode != Mode.OFF:
             self.extra_state_attributes[ATTR_LAST_WATTS_MODE] = device.mode
         self.extra_state_attributes[ATTR_WATTS_TARGET_TEMPERATURE_SETTING] = device.target_temperature_setting
+
+        # Save last device state so we can detect changes while being able to prevent updates right after commands
+        self._last_device_state = device
     
     
     async def async_set_hvac_mode(self, hvac_mode: HVACMode):
@@ -168,13 +178,18 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
         
         mode: Mode = Mode.OFF if hvac_mode == HVACMode.OFF else self.extra_state_attributes.get(ATTR_LAST_WATTS_MODE, Mode.COMFORT)
 
-        await self.client.change_device_mode(
-            self.smart_home_id,
-            self.device_id,
-            mode,
-        )
+        # Optimistically update the hvac mode until the API confirms the change to avoid UI inconsistencies
+        self._attr_hvac_mode = hvac_mode
+        self._attr_preset_mode = mode.value
+        self.async_write_ha_state()
 
-        await self._async_notify_command_sent()
+        await self._async_execute_command_with_revert(
+            self.client.change_device_mode(
+                self.smart_home_id,
+                self.device_id,
+                mode,
+            )
+        )
 
 
     async def async_turn_on(self):
@@ -210,14 +225,20 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
             boost_time_settings = self.config_entry.options.get(CONF_BOOST_DURATION)
             extra_args["boost_time"] = timedelta(**boost_time_settings) if boost_time_settings else DEFAULT_BOOST_DURATION
 
-        await self.client.change_device_mode(
-            self.smart_home_id,
-            self.device_id,
-            Mode(preset_mode),
-            **extra_args,
+        # Optimistically update the preset mode until the API confirms the change to avoid UI inconsistencies
+        self._attr_preset_mode = preset_mode
+        if preset_mode == Mode.OFF.value:
+            self._attr_hvac_mode = HVACMode.OFF
+        self.async_write_ha_state()
+        
+        await self._async_execute_command_with_revert(
+                self.client.change_device_mode(
+                self.smart_home_id,
+                self.device_id,
+                Mode(preset_mode),
+                **extra_args,
+            )
         )
-
-        await self._async_notify_command_sent()
 
 
     async def async_set_temperature(self, **kwargs):
@@ -233,14 +254,18 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
 
         _LOGGER.debug(f"Setting target temperature to {value} for thermostat entity {self.id}, using temperature setting {target_temp_setting}.")
 
-        await self.client.change_device_temperature_setting(
-            self.smart_home_id,
-            self.device_id,
-            target_temp_setting,
-            value,
-        )
+        # Optimistically update the hvac mode until the API confirms the change to avoid UI inconsistencies
+        self._attr_target_temperature = value
+        self.async_write_ha_state()
 
-        await self._async_notify_command_sent()
+        await self._async_execute_command_with_revert(
+            self.client.change_device_temperature_setting(
+                self.smart_home_id,
+                self.device_id,
+                target_temp_setting,
+                value,
+            )
+        )
     
 
     async def async_set_temperature_setting(
@@ -295,14 +320,23 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
             settings_to_update,
         )
 
-        await self._async_notify_command_sent()
+        await self._record_command_sent()
 
 
-    async def _async_notify_command_sent(self):
+    def _record_command_sent(self):
         """Record the time when a command was sent to the API."""
 
         self._last_command_time = datetime.now()
+    
 
-        # Schedule a coordinator refresh after the command delay
-        await asyncio.sleep(API_COMMAND_DELAY.total_seconds())
-        await self.coordinator.async_request_refresh()
+    async def _async_execute_command_with_revert(self, command_coro):
+        """Execute a command coroutine and revert if it fails."""
+
+        try:
+            await command_coro
+            self._record_command_sent()
+        except Exception as e:
+            # Revert optimistic update on failure
+            self._update_data_from_coordinator()
+            self.async_write_ha_state()
+            raise e

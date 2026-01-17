@@ -246,7 +246,7 @@ class WattsApiClient:
     async def async_push_data(self, smart_home_id: str, settings: dict, entity_type: str, expiration: int = DEFAULT_UPDATE_EXPIRATION) -> None:
         payload = {
             "token": "true",
-            "context": entity_type.value,
+            "context": entity_type,
             "smarthome_id": smart_home_id,
             "lang": self._language,
             "peremption": str(expiration),
