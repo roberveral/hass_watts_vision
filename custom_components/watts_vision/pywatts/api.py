@@ -9,12 +9,45 @@ T = TypeVar("T")
 
 #region Constants
 
-WATTS_API_BASE_URL: str = "https://smarthome.wattselectronics.com/api"
-DEFAULT_LANGUAGE: str = "en_GB"
-DEFAULT_UPDATE_EXPIRATION: int = 20000
+WATTS_API_BASE_URL = "https://smarthome.wattselectronics.com/api"
+DEFAULT_LANGUAGE = "en_GB"
+DEFAULT_UPDATE_EXPIRATION = 20000
 
-SMART_HOME_UPDATE_CONTEXT: str = "2"
-DEVICE_UPDATE_CONTEXT: str = "1"
+#region Bundle
+
+BUNDLE_CLIMATE = "1"
+BUNDLE_SENSOR = "2"
+BUNDLE_LIGHT = "3"
+BUNDLE_ONOFF = "4"
+
+#endregion
+
+#region NVGV Modes
+
+NVGV_MODE_CONFORT = "0"
+NVGV_MODE_OFF = "1"
+NVGV_MODE_HORS_GEL = "2"
+NVGV_MODE_ECO = "3"
+NVGV_MODE_BOOST = "4"
+NVGV_MODE_AUTO_CONFORT = "8"
+NVGV_MODE_AUTO_ECO = "11"
+NVGV_MODE_ON = "12"
+NVGV_MODE_AUTO = "13"
+NVGV_MODE_DESACTIVE = "14"
+
+#endregion
+
+#region Entity Types
+
+TYPE_DEVICE = "1"
+TYPE_SMART_HOME = "2"
+TYPE_ZONE = "3"
+TYPE_QUERY = "4"
+TYPE_USER = "5"
+TYPE_SANDBOX = "9"
+TYPE_STATS = "10"
+
+#endregion
 
 #endregion
 
@@ -210,10 +243,10 @@ class WattsApiClient:
         return await self._perform_request("/v0.1/human/sandbox/check_last_connexion/", payload)
 
 
-    async def async_update_smart_home(self, smart_home_id: str, settings: dict, context: str = SMART_HOME_UPDATE_CONTEXT, expiration: int = DEFAULT_UPDATE_EXPIRATION) -> None:
+    async def async_push_data(self, smart_home_id: str, settings: dict, entity_type: str, expiration: int = DEFAULT_UPDATE_EXPIRATION) -> None:
         payload = {
             "token": "true",
-            "context": context,
+            "context": entity_type.value,
             "smarthome_id": smart_home_id,
             "lang": self._language,
             "peremption": str(expiration),
@@ -225,5 +258,9 @@ class WattsApiClient:
         await self._perform_request("/v0.1/human/query/push/", payload)
 
 
+    async def async_update_smart_home(self, smart_home_id: str, settings: dict, expiration: int = DEFAULT_UPDATE_EXPIRATION) -> None:
+        await self.async_push_data(smart_home_id, settings, TYPE_SMART_HOME, expiration)
+
+
     async def async_update_device(self, smart_home_id: str, device_id: str, settings: dict, expiration: int = DEFAULT_UPDATE_EXPIRATION) -> None:
-        await self.async_update_smart_home(smart_home_id, settings={"id_device": device_id, **settings}, context=DEVICE_UPDATE_CONTEXT, expiration=expiration)
+        await self.async_push_data(smart_home_id, settings={"id_device": device_id, **settings}, entity_type=TYPE_DEVICE, expiration=expiration)

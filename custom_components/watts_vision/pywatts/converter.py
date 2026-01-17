@@ -5,24 +5,26 @@ from .model import *
 
 #region Constants
 
+# From: https://smarthome.wattselectronics.com/api/v0.1/human/mobile/read_demo/
 DEVICE_MODE_TO_MODEL: dict[str, (Mode, TemperatureSetting)] = {
-    "0": (Mode.COMFORT, TemperatureSetting.COMFORT),
-    "1": (Mode.OFF, TemperatureSetting.NONE),
-    "2": (Mode.ANTI_FREEZE, TemperatureSetting.ANTI_FREEZE),
-    "3": (Mode.ECO, TemperatureSetting.ECO),
-    "4": (Mode.BOOST, TemperatureSetting.BOOST),
-    # "5": ModeInfo("fan", None),
-    # "6": ModeInfo("fan-disabled", None),
-    "8": (Mode.PROGRAM, TemperatureSetting.COMFORT),
-    "11": (Mode.PROGRAM, TemperatureSetting.ECO),
-    # "13": ModeInfo("program", None),
-    # "15": ModeInfo("manual", "manual"),
-    # "16": ModeInfo("program", "boost"),
+    NVGV_MODE_CONFORT: (Mode.COMFORT, TemperatureSetting.COMFORT),
+    NVGV_MODE_OFF: (Mode.OFF, TemperatureSetting.NONE),
+    NVGV_MODE_HORS_GEL: (Mode.ANTI_FREEZE, TemperatureSetting.ANTI_FREEZE),
+    NVGV_MODE_ECO: (Mode.ECO, TemperatureSetting.ECO),
+    NVGV_MODE_BOOST: (Mode.BOOST, TemperatureSetting.BOOST),
+    NVGV_MODE_AUTO_CONFORT: (Mode.PROGRAM, TemperatureSetting.COMFORT),
+    NVGV_MODE_AUTO_ECO: (Mode.PROGRAM, TemperatureSetting.ECO),
+    NVGV_MODE_ON: (Mode.COMFORT, TemperatureSetting.NONE),
+    NVGV_MODE_AUTO: (Mode.PROGRAM, TemperatureSetting.NONE),
+    NVGV_MODE_DESACTIVE: (Mode.OFF, TemperatureSetting.NONE),
 }
 
-ERROR_CODE_TO_MODEL: dict[str, ErrorCode] = {
-    "0": ErrorCode.NONE,
-    "1": ErrorCode.BATTERY_LOW,
+# Potentially use a call to get errors which includes more detail
+# if new possible errors arise without error codes changing.
+# https://smarthome.wattselectronics.com/api/v0.1/human/smarthome/get_errors/
+ERROR_CODE_TO_MODEL: dict[int, ErrorCode] = {
+    0: ErrorCode.NONE,
+    1: ErrorCode.BATTERY_LOW,
 }
 
 TEMPERATURE_UNIT_FACTOR: float = 10.0
