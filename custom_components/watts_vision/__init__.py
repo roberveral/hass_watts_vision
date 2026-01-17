@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.components.google_assistant.trait import TRAITS
+from homeassistant.components.google_assistant.trait import TRAITS, TemperatureSettingTrait
 
 from .pywatts import WattsVisionClient
 from .pywatts.auth import WattsCredentials
@@ -26,9 +26,18 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     _LOGGER.debug("Initializing Watts Vision integration.")
 
     # Ensure Google Assistant traits are registered
-    from .google_assistant import ClimateModesTrait
+    # Hack so the integration with Google Assistant supports:
+    #   - Preset modes through ModesTrait
+    #   - Active thermostat mode through TemperatureSettingTrait to show HVAC action correctly
+    from .google_assistant import ClimateModesTrait, ActiveModeAwareTemperatureSettingTrait
     if ClimateModesTrait in TRAITS:
         _LOGGER.debug("Google Assistant ClimateModesTrait loaded.")
+    
+    if ActiveModeAwareTemperatureSettingTrait in TRAITS:
+        _LOGGER.debug("Google Assistant ActiveModeAwareTemperatureSettingTrait loaded.")
+        if TemperatureSettingTrait in TRAITS:
+            _LOGGER.debug("Removing Google Assistant TemperatureSettingTrait to avoid conflicts.")
+            TRAITS.remove(TemperatureSettingTrait)
 
     # Register the services.
     async_register_services(hass)

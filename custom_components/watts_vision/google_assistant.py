@@ -5,6 +5,7 @@ from homeassistant.const import STATE_OFF, STATE_UNKNOWN, ATTR_ENTITY_ID
 from homeassistant.components.google_assistant.trait import (
     register_trait,
     ModesTrait,
+    TemperatureSettingTrait,
 )
 from homeassistant.components import climate
 
@@ -145,3 +146,30 @@ class ClimateModesTrait(ModesTrait):
             self.state.domain,
         )
         return
+
+
+@register_trait
+class ActiveModeAwareTemperatureSettingTrait(TemperatureSettingTrait):
+    """Trait to set temperature setting that knows how to handle the active mode.
+
+    https://developers.google.com/actions/smarthome/traits/temperature-setting
+    """
+
+    hvac_action_to_google = {
+        climate.HVACAction.HEATING: "heat",
+        climate.HVACAction.COOLING: "cool",
+        climate.HVACAction.IDLE: "on",
+        climate.HVACAction.OFF: "off",
+    }
+
+    def query_attributes(self) -> dict[str, Any]:
+        response = super().query_attributes()
+
+        attrs = self.state.attributes
+        action = attrs.get(climate.ATTR_HVAC_ACTION)
+
+        # Determine active mode based on operation and preset
+        response["activeThermostatMode"] = self.hvac_action_to_google.get(action, "off")
+
+        _LOGGER.debug("TemperatureSettingTrait QUERY attributes for %s: %s", self.state.entity_id, response)
+        return response
