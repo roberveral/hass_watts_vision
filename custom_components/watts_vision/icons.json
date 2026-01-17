@@ -1,5 +1,36 @@
 {
   "services": {
     "set_temperature_setting": {"service": "mdi:thermometer"}
+  },
+  "entity": {
+    "climate": {
+      "thermostat": {
+        "state_attributes": {
+          "preset_mode": {
+            "default": "mdi:home-thermometer",
+            "state": {
+              "Off": "mdi:home-thermometer-outline",
+              "Comfort": "mdi:weather-sunny",
+              "Eco": "mdi:weather-night",
+              "Boost": "mdi:timer-sand",
+              "Anti-Freeze": "mdi:snowflake",
+              "Program": "mdi:calendar-clock"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "hvac_setting": {
+        "default": "mdi:sun-snowflake-variant",
+        "state": {
+          "Cool": "mdi:snowflake",
+          "Heat": "mdi:fire"
+        }
+      },
+      "communication_delay": {
+        "default": "mdi:timer-sync-outline"
+      }
+    }
   }
 }

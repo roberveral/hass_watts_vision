@@ -1,76 +1,131 @@
 {
   "title": "Watts Vision",
+
   "config": {
     "error": {
-      "scan_interval_too_low": "Scan interval must be at least 300 seconds",
-      "scan_interval_too_high": "Scan interval must be at most 86400 seconds",
-      "missing_data": "We could not find the required data in your configuration",
-      "invalid_auth": "The combination of username and password is not valid",
-      "unknown_authentication_error": "An unknown error occurred while authenticating"
+      "invalid_auth": "La combinación de nombre de usuario y contraseña no es válida",
+      "unknown_authentication_error": "Ocurrió un error desconocido durante la autenticación"
     },
     "step": {
       "user": {
         "title": "Autenticación",
-        "description": "Ingrese las credenciales de su cuenta Watts Vision",
+        "description": "Ingrese las credenciales de su cuenta de Watts Vision",
         "data": {
-          "username": "e-mail",
-          "password": "password"
+          "username": "Correo electrónico",
+          "password": "Contraseña"
         }
       },
       "select_home": {
         "title": "Seleccionar Hogar Inteligente",
-        "description": "Configure su Hogar Inteligente Watts Vision",
+        "description": "Configure su Hogar Inteligente de Watts Vision",
         "data": {
           "smart_home_id": "Hogar Inteligente"
         }
       }
     }
   },
+  
   "options": {
     "error": {
-      "scan_interval_too_low": "Scan interval must be at least 300 seconds",
-      "scan_interval_too_high": "Scan interval must be at most 86400 seconds"
+      "scan_interval_too_low": "El intervalo de escaneo debe ser al menos de 300 segundos",
+      "scan_interval_too_high": "El intervalo de escaneo debe ser como máximo de 86400 segundos"
     },
     "step": {
       "user": {
         "title": "Configuración",
-        "description": "Configure su integración Watts Vision",
+        "description": "Configure su integración de Watts Vision",
         "data": {
-          "scan_interval": "Intervalo de actualización",
-          "boost_duration": "Duración del 'boost'"
+          "scan_interval": "Intervalo de escaneo",
+          "boost_duration": "Duración del boost"
         }
+      }
+    },
+    "selector": {
+      "scan_interval": {
+        "title": "Intervalo de escaneo",
+        "description": "Seleccione el intervalo en el que la integración consulta la API de Watts Vision para actualizaciones."
+      },
+      "boost_duration": {
+        "title": "Duración del boost",
+        "description": "Seleccione la duración durante la cual el modo boost permanece activo al activar el modo."
       }
     }
   },
+  
+  "device": {
+    "thermostat": {
+      "name": "Termostato {zone_label}"
+    },
+    "central_unit": {
+      "name": "Unidad Central {smart_home_name}"
+    }
+  },
+  
+  "entity": {
+    "climate": {
+      "thermostat": {
+        "state_attributes": {
+          "preset_mode": {
+            "name": "Preajuste",
+            "state": {
+              "Off": "Off",
+              "Boost": "Boost",
+              "Comfort": "Confort",
+              "Eco": "Eco",
+              "Anti-Freeze": "Protección",
+              "Program": "Programa"
+            }
+          },
+          "preset_modes": {
+            "name": "Preajustes"
+          }
+        }
+      }
+    },
+    "sensor": {
+      "hvac_setting": {
+        "name": "Configuración HVAC",
+        "state": {
+          "Cool": "Frío",
+          "Heat": "Calor"
+        }
+      },
+      "communication_delay": {
+        "name": "Retraso de Comunicación"
+      }
+    }
+  },
+  
   "exceptions": {
     "invalid_hvac_transition": {
       "message": "No se puede cambiar al modo HVAC solicitado ({hvac_mode}) desde la configuración actual del sistema ({hvac_setting})."
     }
   },
+  
   "services": {
     "set_temperature_setting": {
-      "name": "Establecer Configuración de Temperatura",
-      "description": "Establece un valor de configuración de temperatura de un termostato Watts Vision.",
+      "name": "Establecer configuración de temperatura",
+      "description": "Establecer un valor de configuración de temperatura de un termostato Watts Vision.",
       "fields": {
         "temperature_comfort": {
-          "name": "Temperatura de Confort",
-          "description": "El valor de temperatura a establecer en la configuración."
+          "name": "Temperatura Confort",
+          "description": "El valor de temperatura de la configuración de Confort."
         },
         "temperature_eco": {
           "name": "Temperatura Eco",
-          "description": "El valor de temperatura a establecer en la configuración."
+          "description": "El valor de temperatura de la configuración Eco."
         },
         "temperature_boost": {
-          "name": "Temperatura de Impulso",
-          "description": "El valor de temperatura a establecer en la configuración."
+          "name": "Temperatura Boost",
+          "description": "El valor de temperatura de la configuración Boost."
         },
         "temperature_antifreeze": {
-          "name": "Temperatura Antihielo",
-          "description": "El valor de temperatura a establecer en la configuración."
+          "name": "Temperatura Protección contra Heladas",
+          "description": "El valor de temperatura de la configuración de Protección contra heladas."
         },
         "temperature_manual": {
           "name": "Temperatura Manual",
-          "description": "El valor de temperatura a establecer en la configuración."
+          "description": "El valor de temperatura de la configuración Manual."
         }
       }
     }

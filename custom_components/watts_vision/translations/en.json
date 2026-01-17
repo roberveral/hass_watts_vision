@@ -1,10 +1,8 @@
 {
   "title": "Watts Vision",
+
   "config": {
     "error": {
-      "scan_interval_too_low": "Scan interval must be at least 300 seconds",
-      "scan_interval_too_high": "Scan interval must be at most 86400 seconds",
-      "missing_data": "We could not find the required data in your configuration",
       "invalid_auth": "The combination of username and password is not valid",
       "unknown_authentication_error": "An unknown error occurred while authenticating"
     },
@@ -13,8 +11,8 @@
         "title": "Authentication",
         "description": "Enter your Watts Vision account credentials",
         "data": {
-          "username": "e-mail",
-          "password": "password"
+          "username": "Email",
+          "password": "Password"
         }
       },
       "select_home": {
@@ -26,6 +24,7 @@
       }
     }
   },
+  
   "options": {
     "error": {
       "scan_interval_too_low": "Scan interval must be at least 300 seconds",
@@ -36,17 +35,73 @@
         "title": "Settings",
         "description": "Configure your Watts Vision integration",
         "data": {
-          "scan_interval": "refresh time",
-          "boost_duration": "boost duration"
+          "scan_interval": "Scan interval",
+          "boost_duration": "Boost duration"
         }
+      }
+    },
+    "selector": {
+      "scan_interval": {
+        "title": "Scan Interval",
+        "description": "Select the interval at which the integration polls Watts Vision API for updates."
+      },
+      "boost_duration": {
+        "title": "Boost Duration",
+        "description": "Select the duration for which the boost mode remains active when entering the preset."
       }
     }
   },
+  
+  "device": {
+    "thermostat": {
+      "name": "Thermostat {zone_label}"
+    },
+    "central_unit": {
+      "name": "Central Unit {smart_home_name}"
+    }
+  },
+  
+  "entity": {
+    "climate": {
+      "thermostat": {
+        "state_attributes": {
+          "preset_mode": {
+            "name": "Preset",
+            "state": {
+              "Off": "Off",
+              "Boost": "Boost",
+              "Comfort": "Comfort",
+              "Eco": "Eco",
+              "Anti-Freeze": "Anti-Freeze",
+              "Program": "Program"
+            }
+          },
+          "preset_modes": {
+            "name": "Presets"
+          }
+        }
+      }
+    },
+    "sensor": {
+      "hvac_setting": {
+        "name": "HVAC Setting",
+        "state": {
+          "Cool": "Cool",
+          "Heat": "Heat"
+        }
+      },
+      "communication_delay": {
+        "name": "Communication Delay"
+      }
+    }
+  },
+  
   "exceptions": {
     "invalid_hvac_transition": {
       "message": "Cannot switch to the requested HVAC mode ({hvac_mode}) from the current system setting ({hvac_setting})."
     }
   },
+  
   "services": {
     "set_temperature_setting": {
       "name": "Set Temperature Setting",
@@ -54,23 +109,23 @@
       "fields": {
         "temperature_comfort": {
           "name": "Comfort Temperature",
-          "description": "The temperature value to set in the setting."
+          "description": "The temperature value to set in the Comfort setting."
         },
         "temperature_eco": {
           "name": "Eco Temperature",
-          "description": "The temperature value to set in the setting."
+          "description": "The temperature value to set in the Eco setting."
         },
         "temperature_boost": {
           "name": "Boost Temperature",
-          "description": "The temperature value to set in the setting."
+          "description": "The temperature value to set in the Boost setting."
         },
         "temperature_antifreeze": {
           "name": "Antifreeze Temperature",
-          "description": "The temperature value to set in the setting."
+          "description": "The temperature value to set in the Antifreeze setting."
         },
         "temperature_manual": {
           "name": "Manual Temperature",
-          "description": "The temperature value to set in the setting."
+          "description": "The temperature value to set in the Manual setting."
         }
       }
     }

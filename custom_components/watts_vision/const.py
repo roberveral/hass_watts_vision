@@ -5,11 +5,8 @@ from homeassistant.components.climate.const import HVACMode
 
 from .pywatts.model import HVACSetting
 
-# Domain and Manufacturer
+# Domain
 DOMAIN: str = "watts_vision"
-MANUFACTURER: str = "Watts"
-THERMOSTAT_MODEL: str = "BT-D03-RF"
-CENTRAL_UNIT_MODEL: str = "BT-CT02-RF"
 
 # Configuration Keys
 CONF_SMART_HOME_ID: str = "smart_home_id"
@@ -33,4 +30,4 @@ ALLOWED_HVAC_TRANSITIONS = {
 
 # API Constants
 CLIENT_TIMEOUT: int = 10  # seconds
-API_COMMAND_DELAY: timedelta = timedelta(seconds=5)  # Delay after sending a command before next read
+API_COMMAND_DELAY: timedelta = timedelta(seconds=10)  # Delay after sending a command before next read

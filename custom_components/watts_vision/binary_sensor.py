@@ -8,8 +8,9 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .pywatts.model import Device, ErrorCode
 
 from .types import WattsVisionConfigEntry
-from .const import CONF_SMART_HOME_ID, DOMAIN, MANUFACTURER, THERMOSTAT_MODEL
+from .const import CONF_SMART_HOME_ID
 from .coordinator import WattsVisionCoordinator
+from .device import thermostat_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry, 
 class WattsBatterySensor(CoordinatorEntity[WattsVisionCoordinator], BinarySensorEntity):
     """Representation of a Battery Sensor from a Watts Vision Thermostat."""
 
+    _attr_has_entity_name = True
     _attr_device_class = BinarySensorDeviceClass.BATTERY
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
@@ -50,24 +52,14 @@ class WattsBatterySensor(CoordinatorEntity[WattsVisionCoordinator], BinarySensor
 
         # Properties
         self._attr_unique_id = "watts_battery_sensor_" + self.id
-        self._attr_name = self.zone_label + " Battery"
+        self._attr_device_info = thermostat_device_info(
+            unique_id=self.id,
+            smart_home_id=self.smart_home_id,
+            zone_label=self.zone_label
+        )
 
         self._update_value_from_coordinator()
 
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, self.id)
-            },
-            "manufacturer": MANUFACTURER,
-            "name": "Thermostat " + self.zone_label,
-            "model": THERMOSTAT_MODEL,
-            "via_device": (DOMAIN, self.smart_home_id),
-            "suggested_area": self.zone_label,
-        }
 
     @callback
     def _handle_coordinator_update(self) -> None:

@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.components.google_assistant.trait import TRAITS
 
 from .pywatts import WattsVisionClient
 from .pywatts.auth import WattsCredentials
@@ -23,6 +24,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Watts Vision component."""
     
     _LOGGER.debug("Initializing Watts Vision integration.")
+
+    # Ensure Google Assistant traits are registered
+    from .google_assistant import ClimateModesTrait
+    if ClimateModesTrait in TRAITS:
+        _LOGGER.debug("Google Assistant ClimateModesTrait loaded.")
 
     # Register the services.
     async_register_services(hass)

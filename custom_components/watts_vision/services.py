@@ -6,7 +6,7 @@ from homeassistant.components.climate import DOMAIN as CLIMATE_DOMAIN
 
 from .const import DOMAIN
 
-# set_temperature_setting
+# Entity Service: set_temperature_setting
 
 SERVICE_SET_TEMPERATURE_SETTING = "set_temperature_setting"
 SERVICE_ATTR_TEMPERATURE_COMFORT = "temperature_comfort"

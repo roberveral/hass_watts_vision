@@ -8,8 +8,9 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .pywatts.model import Device, HVACSetting
 
 from .types import WattsVisionConfigEntry
-from .const import CONF_SMART_HOME_ID, DOMAIN, MANUFACTURER, THERMOSTAT_MODEL, CENTRAL_UNIT_MODEL
+from .const import CONF_SMART_HOME_ID
 from .coordinator import WattsVisionCoordinator
+from .device import thermostat_device_info, central_unit_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry, 
 class WattsTemperatureSensor(CoordinatorEntity[WattsVisionCoordinator], SensorEntity):
     """Representation of a Temperature Sensor from a Watts Vision Thermostat."""
 
+    _attr_has_entity_name = True
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_native_unit_of_measurement = UnitOfTemperature.FAHRENHEIT
 
@@ -53,24 +55,14 @@ class WattsTemperatureSensor(CoordinatorEntity[WattsVisionCoordinator], SensorEn
 
         # Properties
         self._attr_unique_id = "watts_temperature_sensor_" + self.id
-        self._attr_name = self.zone_label + " Temperature Air"
+        self._attr_device_info = thermostat_device_info(
+            unique_id=self.id,
+            smart_home_id=self.smart_home_id,
+            zone_label=self.zone_label
+        )
 
         self._update_value_from_coordinator()
 
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, self.id)
-            },
-            "manufacturer": MANUFACTURER,
-            "name": "Thermostat " + self.zone_label,
-            "model": THERMOSTAT_MODEL,
-            "via_device": (DOMAIN, self.smart_home_id),
-            "suggested_area": self.zone_label,
-        }
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -96,10 +88,11 @@ class WattsTemperatureSensor(CoordinatorEntity[WattsVisionCoordinator], SensorEn
 class WattsHVACSettingSensor(CoordinatorEntity[WattsVisionCoordinator], SensorEntity):
     """Representation of a HVAC setting sensor from a Watts Vision Thermostat."""
 
+    _attr_has_entity_name = True
+    _attr_translation_key = "hvac_setting"
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_options = [setting.value for setting in HVACSetting]
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_icon = "mdi:sun-snowflake-variant"
 
     def __init__(self, coordinator: WattsVisionCoordinator, config_entry: WattsVisionConfigEntry, id: str, device_id: str, zone_label: str) -> None:
         """Initialize the temperature sensor."""
@@ -114,24 +107,14 @@ class WattsHVACSettingSensor(CoordinatorEntity[WattsVisionCoordinator], SensorEn
 
         # Properties
         self._attr_unique_id = "watts_hvac_setting_sensor_" + self.id
-        self._attr_name = self.zone_label + " HVAC Setting"
+        self._attr_device_info = thermostat_device_info(
+            unique_id=self.id,
+            smart_home_id=self.smart_home_id,
+            zone_label=self.zone_label
+        )
 
         self._update_value_from_coordinator()
 
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, self.id)
-            },
-            "manufacturer": MANUFACTURER,
-            "name": "Thermostat " + self.zone_label,
-            "model": THERMOSTAT_MODEL,
-            "via_device": (DOMAIN, self.smart_home_id),
-            "suggested_area": self.zone_label,
-        }
     
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -157,10 +140,11 @@ class WattsHVACSettingSensor(CoordinatorEntity[WattsVisionCoordinator], SensorEn
 class WattsCentralHVACSettingSensor(CoordinatorEntity[WattsVisionCoordinator], SensorEntity):
     """Representation of a HVAC setting sensor from a Watts Vision Thermostat."""
 
+    _attr_has_entity_name = True
+    _attr_translation_key = "hvac_setting"
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_options = [setting.value for setting in HVACSetting]
     _attr_entity_category = EntityCategory.DIAGNOSTIC
-    _attr_icon = "mdi:sun-snowflake-variant"
 
     def __init__(self, coordinator: WattsVisionCoordinator, config_entry: WattsVisionConfigEntry) -> None:
         """Initialize the temperature sensor."""
@@ -172,23 +156,13 @@ class WattsCentralHVACSettingSensor(CoordinatorEntity[WattsVisionCoordinator], S
 
         # Properties
         self._attr_unique_id = "watts_central_hvac_setting_sensor_" + self.smart_home_id
-        self._attr_name = "Central HVAC Setting"
+        self._attr_device_info = central_unit_device_info(
+            smart_home_id=self.smart_home_id,
+            smart_home_name=self.coordinator.data.label,
+            mac_address=self.coordinator.data.mac_address
+        )
 
         self._update_value_from_coordinator()
-
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, self.smart_home_id)
-            },
-            "manufacturer": MANUFACTURER,
-            "name": f"Central Unit {self.coordinator.data.label}",
-            "model": CENTRAL_UNIT_MODEL,
-            "connections": {("mac", self.coordinator.data.mac_address)},
-        }
 
 
     @callback
@@ -210,6 +184,8 @@ class WattsCentralHVACSettingSensor(CoordinatorEntity[WattsVisionCoordinator], S
 class WattsCentralCommunicationSensor(SensorEntity):
     """Representation of a last communication sensor from a Watts Vision Thermostat."""
 
+    _attr_has_entity_name = True
+    _attr_translation_key = "communication_delay"
     _attr_device_class = SensorDeviceClass.DURATION
     _attr_native_unit_of_measurement = UnitOfTime.SECONDS
     _attr_entity_category = EntityCategory.DIAGNOSTIC
@@ -224,21 +200,11 @@ class WattsCentralCommunicationSensor(SensorEntity):
 
         # Properties
         self._attr_unique_id = "watts_central_communication_sensor_" + self.smart_home_id
-        self._attr_name = "Central Communication"
-
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, self.smart_home_id)
-            },
-            "manufacturer": MANUFACTURER,
-            "name": f"Central Unit {self.coordinator.data.label}",
-            "model": CENTRAL_UNIT_MODEL,
-            "connections": {("mac", self.coordinator.data.mac_address)},
-        }
+        self._attr_device_info = central_unit_device_info(
+            smart_home_id=self.smart_home_id,
+            smart_home_name=self.coordinator.data.label,
+            mac_address=self.coordinator.data.mac_address
+        )
 
 
     async def async_update(self) -> None:

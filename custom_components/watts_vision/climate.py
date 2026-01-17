@@ -16,10 +16,9 @@ from homeassistant.exceptions import IntegrationError
 from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .types import WattsVisionConfigEntry
+from.device import thermostat_device_info
 from .const import (
     DOMAIN,
-    MANUFACTURER,
-    THERMOSTAT_MODEL,
     ALLOWED_HVAC_TRANSITIONS,
     CONF_SMART_HOME_ID,
     CONF_BOOST_DURATION,
@@ -58,7 +57,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry, 
 
 class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
 
-    # _attr_has_entity_name = True
+    _attr_has_entity_name = True
+    _attr_name = None
+    _attr_translation_key = "thermostat"
     _attr_hvac_mode = HVACMode.HEAT
     _attr_hvac_modes = [HVACMode.HEAT, HVACMode.COOL, HVACMode.OFF]
     _attr_preset_mode = Mode.COMFORT.value
@@ -81,24 +82,14 @@ class WattsThermostat(CoordinatorEntity[WattsVisionCoordinator], ClimateEntity):
 
         # Properties
         self._attr_unique_id = "watts_thermostat_" + self.id
-        self._attr_name = self.zone_label + " Thermostat"
+        self._attr_device_info = thermostat_device_info(
+            unique_id=self.id,
+            smart_home_id=self.smart_home_id,
+            zone_label=self.zone_label
+        )
 
         # Initialize state from coordinator data
         self._update_data_from_coordinator()
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, self.id)
-            },
-            "manufacturer": MANUFACTURER,
-            "name": "Thermostat " + self.zone_label,
-            "model": THERMOSTAT_MODEL,
-            "via_device": (DOMAIN, self.smart_home_id),
-            "suggested_area": self.zone_label,
-        }
     
 
     @callback
