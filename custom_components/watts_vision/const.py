@@ -1,6 +1,7 @@
 """Constants for the Watts Vision integration."""
 
 from datetime import timedelta
+
 from homeassistant.components.climate.const import HVACMode
 
 from .pywatts.model import HVACSetting
@@ -29,5 +30,5 @@ ALLOWED_HVAC_TRANSITIONS = {
 }
 
 # API Constants
-CLIENT_TIMEOUT: int = 10  # seconds
-API_COMMAND_EXPIRATION: timedelta = timedelta(seconds=20)  # Time before a sent command expires
+CLIENT_TIMEOUT: int = 10
+API_COMMAND_EXPIRATION: timedelta = timedelta(seconds=20)

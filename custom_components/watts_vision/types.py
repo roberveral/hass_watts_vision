@@ -1,3 +1,5 @@
+"""Type definitions for Watts Vision integration."""
+
 from dataclasses import dataclass
 
 from homeassistant.config_entries import ConfigEntry
@@ -8,9 +10,14 @@ from .pywatts import WattsVisionClient
 
 @dataclass
 class WattsData:
+    """Runtime data for Watts Vision integration.
+
+    Contains the API client and data coordinator for the integration, which is
+    included in the Home Assistant config entry data.
+    """
+
     client: WattsVisionClient
     coordinator: WattsVisionCoordinator
 
 
 type WattsVisionConfigEntry = ConfigEntry[WattsData]
-

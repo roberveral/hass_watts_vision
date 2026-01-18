@@ -7,7 +7,6 @@ set_temperature_setting:
       integration: watts_vision
       domain: climate
 
-  # Different fields that your service action accepts
   fields:
     temperature_comfort:
       # name: "Comfort Temperature"
