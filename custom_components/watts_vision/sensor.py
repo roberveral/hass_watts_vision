@@ -217,23 +217,9 @@ class WattsCentralCommunicationSensor(WattsCentralUnitEntity, SensorEntity):
             f"watts_central_communication_sensor_{self._smart_home_id}"
         )
 
-    async def async_update(self) -> None:
-        """Fetch new state data for the sensor."""
-
-        # TODO: fetch last communication when fetching SmartHome data so communicaiton is
-        # centralized.
-
-        _LOGGER.debug(
-            "Updating Central Communication sensor entity %s state from client data.",
-            self.smart_home_id,
-        )
-
-        time_since_last_connection = (
-            await self.config_entry.runtime_data.client.get_last_connection(
-                self._smart_home_id
-            )
-        )
-        self._attr_native_value = time_since_last_connection.total_seconds()
+    def _update_entity_from_smart_home(self, smart_home: SmartHome) -> None:
+        """Update the entity's state based on the provided smart home data."""
+        self._attr_native_value = smart_home.connection_delay.total_seconds()
 
 
 # TODO: add diagnostic sensor for boost time.

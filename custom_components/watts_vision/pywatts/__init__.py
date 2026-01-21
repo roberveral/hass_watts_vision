@@ -73,20 +73,16 @@ class WattsVisionClient:
 
         Smart home information includes details about devices, zones, and central unit configurations.
         """
+
         api_smart_home_data = await self._api_client.async_get_smart_home_data(
             smart_home_id
         )
-        return convert_smart_home(api_smart_home_data)
 
-    async def get_last_connection(self, smart_home_id: str) -> timedelta:
-        """Get the delta since the last connection of the central unit in the given smart home to Watts servers.
-
-        A high delta may indicate connectivity issues with the central unit, and will lead to delays in data updates.
-        """
         api_last_connection_data = await self._api_client.async_get_last_connection(
             smart_home_id
         )
-        return timedelta(seconds=api_last_connection_data["diff"])
+
+        return convert_smart_home(api_smart_home_data, api_last_connection_data)
 
     async def change_device_mode(
         self,

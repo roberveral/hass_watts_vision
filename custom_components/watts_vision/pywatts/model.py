@@ -9,6 +9,7 @@ the underlying API data structures into more manageable Python objects.
 """
 
 from dataclasses import dataclass
+from datetime import timedelta
 from enum import StrEnum
 
 
@@ -150,6 +151,7 @@ class SmartHome:
     hvac_setting: HVACSetting
     devices: list[Device]
     zones: list[Zone]
+    connection_delay: timedelta
 
     def get_device_by_id(self, device_id: str) -> Device | None:
         """Get a device in the smart home by its ID."""

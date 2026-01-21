@@ -18,6 +18,7 @@ from .api import (
     NVGV_MODE_OFF,
     NVGV_MODE_ON,
     WattsApiDevice,
+    WattsApiLastConnectionData,
     WattsApiSmartHomeData,
     WattsApiSmartHomeSummary,
     WattsApiUserData,
@@ -185,7 +186,9 @@ def convert_zone(zone_data: WattsApiZone) -> Zone:
     )
 
 
-def convert_smart_home(home_data: WattsApiSmartHomeData) -> SmartHome:
+def convert_smart_home(
+    home_data: WattsApiSmartHomeData, last_connection_data: WattsApiLastConnectionData
+) -> SmartHome:
     """Convert a Watts Vision API smart home data into a SmartHome model."""
 
     devices = [convert_device(device) for device in home_data["devices"]]
@@ -206,6 +209,7 @@ def convert_smart_home(home_data: WattsApiSmartHomeData) -> SmartHome:
         hvac_setting=hvac_setting,
         devices=devices,
         zones=zones,
+        connection_delay=timedelta(seconds=last_connection_data["diff"]),
     )
 
 
