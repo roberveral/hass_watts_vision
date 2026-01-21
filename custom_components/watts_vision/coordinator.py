@@ -53,7 +53,7 @@ class WattsVisionCoordinator(DataUpdateCoordinator[SmartHome]):
             name="Watts Vision",
             config_entry=config_entry,
             update_interval=scan_interval,
-            always_update=True,
+            always_update=False,
         )
         self.client = client
         self.smart_home_id = config_entry.data.get(CONF_SMART_HOME_ID)

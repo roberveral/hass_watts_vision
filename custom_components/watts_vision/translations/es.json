@@ -92,6 +92,26 @@
       },
       "communication_delay": {
         "name": "Retraso de Comunicación"
+      },
+      "floor_temperature": {
+        "name": "Temperatura del Suelo"
+      }
+    },
+    "number": {
+      "temperature_setting_comfort": {
+        "name": "Ajuste Temperatura: Confort"
+      },
+      "temperature_setting_eco": {
+        "name": "Ajuste Temperatura: Eco"
+      },
+      "temperature_setting_boost": {
+        "name": "Ajuste Temperatura: Boost"
+      },
+      "temperature_setting_anti_freeze": {
+        "name": "Ajuste Temperatura: Protección contra Heladas"
+      },
+      "temperature_setting_manual": {
+        "name": "Ajuste Temperatura: Manual"
       }
     }
   },
@@ -99,35 +119,6 @@
   "exceptions": {
     "invalid_hvac_transition": {
       "message": "No se puede cambiar al modo HVAC solicitado ({hvac_mode}) desde la configuración actual del sistema ({hvac_setting})."
-    }
-  },
-  
-  "services": {
-    "set_temperature_setting": {
-      "name": "Establecer configuración de temperatura",
-      "description": "Establecer un valor de configuración de temperatura de un termostato Watts Vision.",
-      "fields": {
-        "temperature_comfort": {
-          "name": "Temperatura Confort",
-          "description": "El valor de temperatura de la configuración de Confort."
-        },
-        "temperature_eco": {
-          "name": "Temperatura Eco",
-          "description": "El valor de temperatura de la configuración Eco."
-        },
-        "temperature_boost": {
-          "name": "Temperatura Boost",
-          "description": "El valor de temperatura de la configuración Boost."
-        },
-        "temperature_antifreeze": {
-          "name": "Temperatura Protección contra Heladas",
-          "description": "El valor de temperatura de la configuración de Protección contra heladas."
-        },
-        "temperature_manual": {
-          "name": "Temperatura Manual",
-          "description": "El valor de temperatura de la configuración Manual."
-        }
-      }
     }
   }
 }

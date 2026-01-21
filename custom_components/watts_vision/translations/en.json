@@ -92,6 +92,26 @@
       },
       "communication_delay": {
         "name": "Communication Delay"
+      },
+      "floor_temperature": {
+        "name": "Floor Temperature"
+      }
+    },
+    "number": {
+      "temperature_setting_comfort": {
+        "name": "Temperature Setting: Comfort"
+      },
+      "temperature_setting_eco": {
+        "name": "Temperature Setting: Eco"
+      },
+      "temperature_setting_boost": {
+        "name": "Temperature Setting: Boost"
+      },
+      "temperature_setting_anti_freeze": {
+        "name": "Temperature Setting: Antifreeze"
+      },
+      "temperature_setting_manual": {
+        "name": "Temperature Setting: Manual"
       }
     }
   },
@@ -99,35 +119,6 @@
   "exceptions": {
     "invalid_hvac_transition": {
       "message": "Cannot switch to the requested HVAC mode ({hvac_mode}) from the current system setting ({hvac_setting})."
-    }
-  },
-  
-  "services": {
-    "set_temperature_setting": {
-      "name": "Set Temperature Setting",
-      "description": "Set a temperature setting value of a Watts Vision thermostat.",
-      "fields": {
-        "temperature_comfort": {
-          "name": "Comfort Temperature",
-          "description": "The temperature value to set in the Comfort setting."
-        },
-        "temperature_eco": {
-          "name": "Eco Temperature",
-          "description": "The temperature value to set in the Eco setting."
-        },
-        "temperature_boost": {
-          "name": "Boost Temperature",
-          "description": "The temperature value to set in the Boost setting."
-        },
-        "temperature_antifreeze": {
-          "name": "Antifreeze Temperature",
-          "description": "The temperature value to set in the Antifreeze setting."
-        },
-        "temperature_manual": {
-          "name": "Manual Temperature",
-          "description": "The temperature value to set in the Manual setting."
-        }
-      }
     }
   }
 }

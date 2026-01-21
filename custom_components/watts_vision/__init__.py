@@ -15,10 +15,9 @@ from .coordinator import WattsVisionCoordinator
 from .google_assistant import ActiveModeAwareTemperatureSettingTrait, ClimateModesTrait
 from .pywatts import WattsVisionClient
 from .pywatts.auth import WattsCredentials
-from .services import async_register_services
 from .types import WattsData, WattsVisionConfigEntry
 
-PLATFORMS = [Platform.CLIMATE, Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS = [Platform.CLIMATE, Platform.SENSOR, Platform.BINARY_SENSOR, Platform.NUMBER]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,9 +41,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 "Removing Google Assistant TemperatureSettingTrait to avoid conflicts."
             )
             TRAITS.remove(TemperatureSettingTrait)
-
-    # Register the services.
-    async_register_services(hass)
 
     return True
 

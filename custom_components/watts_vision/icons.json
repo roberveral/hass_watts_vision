@@ -1,7 +1,4 @@
 {
-  "services": {
-    "set_temperature_setting": {"service": "mdi:thermometer"}
-  },
   "entity": {
     "climate": {
       "thermostat": {
@@ -30,6 +27,26 @@
       },
       "communication_delay": {
         "default": "mdi:timer-sync-outline"
+      },
+      "floor_temperature": {
+        "default": "mdi:thermometer-lines"
+      }
+    },
+    "number": {
+      "temperature_setting_comfort": {
+        "default": "mdi:weather-sunny"
+      },
+      "temperature_setting_eco": {
+        "default": "mdi:weather-night"
+      },
+      "temperature_setting_boost": {
+        "default": "mdi:timer-sand"
+      },
+      "temperature_setting_anti_freeze": {
+        "default": "mdi:snowflake"
+      },
+      "temperature_setting_manual": {
+        "default": "mdi:head-outline"
       }
     }
   }

@@ -11,12 +11,10 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
 )
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.core import HomeAssistant
 
-from .const import CONF_SMART_HOME_ID
 from .coordinator import WattsVisionCoordinator
-from .device import thermostat_device_info
+from .entity import WattsThermostatEntity
 from .pywatts.model import Device, ErrorCode
 from .types import WattsVisionConfigEntry
 
@@ -40,16 +38,12 @@ async def async_setup_entry(
             _LOGGER.debug(
                 "Found device %s in zone %s for sensor entity.", device.id, zone.label
             )
-            entities.append(
-                WattsBatterySensor(
-                    coordinator, entry, device.id, device.device_id, zone.label
-                )
-            )
+            entities.append(WattsBatterySensor(coordinator, entry, device, zone.label))
 
     async_add_entities(entities)
 
 
-class WattsBatterySensor(CoordinatorEntity[WattsVisionCoordinator], BinarySensorEntity):
+class WattsBatterySensor(WattsThermostatEntity, BinarySensorEntity):
     """Representation of a Battery Sensor from a Watts Vision Thermostat.
 
     This sensor indicates whether the battery level of the thermostat device is low.
@@ -62,49 +56,18 @@ class WattsBatterySensor(CoordinatorEntity[WattsVisionCoordinator], BinarySensor
     def __init__(
         self,
         coordinator: WattsVisionCoordinator,
-        config_entry: WattsVisionConfigEntry,
-        id: str,
-        device_id: str,
-        zone_label: str,
+        entry: WattsVisionConfigEntry,
+        device: Device,
+        suggested_area: str | None = None,
     ) -> None:
         """Initialize the battery sensor."""
 
-        super().__init__(coordinator)
-        self.id = id
-        self.device_id = device_id
-        self.zone_label = zone_label
-        self.smart_home_id: str = config_entry.data[CONF_SMART_HOME_ID]
-        self.client = config_entry.runtime_data.client
-        self.config_entry = config_entry
+        super().__init__(coordinator, entry, device, suggested_area)
 
         # Properties
-        self._attr_unique_id = "watts_battery_sensor_" + self.id
-        self._attr_device_info = thermostat_device_info(
-            unique_id=self.id,
-            smart_home_id=self.smart_home_id,
-            zone_label=self.zone_label,
-        )
+        self._attr_unique_id = f"watts_battery_sensor_{self._id}"
 
-        self._update_value_from_coordinator()
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-
-        self._update_value_from_coordinator()
-        super()._handle_coordinator_update()
-
-    def _update_value_from_coordinator(self):
-        """Update the entity's state based on the coordinator's data."""
-
-        _LOGGER.debug(
-            "Updating battery sensor entity %s state from coordinator data.",
-            self.id,
-        )
-
-        device: Device = self.coordinator.data.get_device_by_id(self.id)
-        if device is None:
-            _LOGGER.error("Device with ID %s not found in Smart Home data.", self.id)
-            return
+    def _update_entity_from_device(self, device: Device) -> None:
+        """Update the entity's state based on the provided device data."""
 
         self._attr_is_on = device.error_code == ErrorCode.BATTERY_LOW
