@@ -151,6 +151,8 @@ class WattsVisionOptionsFlow(config_entries.OptionsFlowWithReload):
 
         _LOGGER.debug("Displaying options form for Watts Vision integration.")
 
+        # TODO: add api command timeout option
+
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(

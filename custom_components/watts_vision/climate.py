@@ -234,10 +234,10 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
 
         # Handle boost mode duration from the configuration
         if preset_mode == Mode.BOOST.value:
-            boost_time_settings = self._entry.options.get(CONF_BOOST_DURATION)
-            extra_args["boost_time"] = (
-                timedelta(**boost_time_settings)
-                if boost_time_settings
+            boost_duration_settings = self._entry.options.get(CONF_BOOST_DURATION)
+            extra_args["boost_duration"] = (
+                timedelta(**boost_duration_settings)
+                if boost_duration_settings
                 else DEFAULT_BOOST_DURATION
             )
 

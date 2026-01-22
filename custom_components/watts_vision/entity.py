@@ -134,7 +134,7 @@ class WattsThermostatEntity(WattsVisionEntity):
             self._last_command_time = datetime.now()
             await command_coro
             # Add delay to allow for API eventual consistency
-            await asyncio.sleep(API_COMMAND_EXPIRATION)
+            await asyncio.sleep(API_COMMAND_EXPIRATION.total_seconds())
         finally:
             # If failure or after delay, refresh state from coordinator removing optimistic updates
             self._update_entity_from_coordinator()

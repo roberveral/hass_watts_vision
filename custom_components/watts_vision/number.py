@@ -63,7 +63,7 @@ class WattsTemperatureSetting(WattsThermostatEntity, NumberEntity):
     _attr_device_class = NumberDeviceClass.TEMPERATURE
     _attr_native_unit_of_measurement = UnitOfTemperature.FAHRENHEIT
     _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_step = 0.9  # 0.5 °C in °F increments
+    _attr_native_step = 0.5
 
     def __init__(
         self,
@@ -103,10 +103,10 @@ class WattsTemperatureSetting(WattsThermostatEntity, NumberEntity):
         self.async_write_ha_state()
 
         await self._async_execute_watts_command(
-            self._api_client.set_device_temperature_setting(
+            self._api_client.change_device_temperature_setting(
                 smart_home_id=self._smart_home_id,
                 device_id=self._device_id,
                 temperature_setting=self._temperature_setting,
-                value=value,
+                temperature=value,
             )
         )

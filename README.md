@@ -16,10 +16,10 @@ A Home Assistant custom integration for Watts Vision smart heating systems, enab
   - Temperature sensor for current room temperature
   - HVAC setting sensor (Heat/Cool mode)
   - Battery sensor for low battery detection
+  - Temperature setting configuration entities for changing temperature setpoints beyond the current mode
 - **Central Unit Monitoring**: 
   - System-wide HVAC setting sensor
   - Communication delay sensor to monitor connectivity
-- **Custom Services**: Advanced service to set multiple temperature settings at once
 - **Optimistic Updates**: Instant UI feedback when changing settings
 
 ## Installation
@@ -125,35 +125,17 @@ Each battery-powered thermostat includes a battery sensor that indicates if the 
 
 The central unit exposes a communication delay sensor that reports the time since the last successful communication with Watts servers. High values may indicate connectivity issues.
 
-## Custom Services
+### Configuration: Temperature Settings
 
-### Set Temperature Settings
+Each thermostat includes entities to adjust each of the temperature settings supported by the thermostat.
+While the climate entity handles the temperature setting associated with the current mode, these
+settings allow changing any setpoint at any time.
 
-The `watts_vision.set_temperature_setting` service allows you to configure multiple temperature settings without changing the current mode.
-
-**Service**: `watts_vision.set_temperature_setting`
-
-**Target**: Climate entities
-
-**Parameters**:
-- `temperature_comfort` (optional): Set the comfort temperature
-- `temperature_eco` (optional): Set the eco temperature
-- `temperature_boost` (optional): Set the boost temperature
-- `temperature_antifreeze` (optional): Set the anti-freeze temperature
-- `temperature_manual` (optional): Set the manual temperature
-
-**Example**:
-```yaml
-service: watts_vision.set_temperature_setting
-target:
-  entity_id: climate.living_room
-data:
-  temperature_comfort: 21.5
-  temperature_eco: 18.0
-  temperature_boost: 24.0
-```
-
-This is useful for seasonal adjustments or automations based on weather conditions.
+- Comfort
+- Eco
+- Boost
+- Anti-Freeze
+- Manual
 
 ## Troubleshooting
 
@@ -217,7 +199,8 @@ The integration polls data from the Watts Vision cloud API every 15 seconds by d
 - **Cloud Polling**: The integration uses cloud polling (IoT Class: cloud_polling) rather than push notifications, which may result in slight delays in state updates
 - **HVAC Setting**: The system-wide HVAC setting (Heat/Cool) cannot be changed via the API and must be configured manually on the central unit or through the Watts Vision app
 - **Program Schedules**: While the integration supports Program mode, the actual program schedules must be configured in the Watts Vision mobile app
-- **Floor Temperature**: While floor temperature data is available from the API, only air temperature is currently exposed as the primary temperature sensor
+- **Floor Temperature**: floor temperature is exposed as a diagnostic sensor, but I haven't been able to
+validate that it works, as it always return 100ºC.
 
 ## Contributing
 
