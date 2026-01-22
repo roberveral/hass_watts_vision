@@ -173,6 +173,7 @@ def convert_device(device_data: WattsApiDevice) -> Device:
         max_set_point=parse_temperature(device_data["max_set_point"]),
         status=status,
         error_code=ERROR_CODE_TO_MODEL.get(device_data["error_code"], ErrorCode.NONE),
+        boost_duration_remaining=parse_duration(device_data["time_boost"]),
     )
 
 

@@ -51,6 +51,9 @@ async def async_setup_entry(
             entities.append(
                 WattsHVACSettingSensor(coordinator, entry, device, zone.label)
             )
+            entities.append(
+                WattsBoostDurationRemainingSensor(coordinator, entry, device, zone.label)
+            )
 
     async_add_entities(entities)
 
@@ -152,6 +155,42 @@ class WattsHVACSettingSensor(WattsThermostatEntity, SensorEntity):
         """Update the entity's state based on the provided device data."""
 
         self._attr_native_value = device.hvac_setting.value
+
+
+class WattsBoostDurationRemainingSensor(WattsThermostatEntity, SensorEntity):
+    """Representation of a boost duration remaining sensor from a Watts Vision Thermostat.
+
+    This diagnostic sensor gives visibility into the remaining boost duration time
+    on the thermostat device. By default, this sensor will be 2 hours (7200 seconds)
+    when boost mode is disabled, and will count down to zero as time passes when the mode
+    is enabled.
+    """
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "boost_duration_remaining"
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+    _attr_suggested_unit_of_measurement = UnitOfTime.HOURS
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(
+        self,
+        coordinator: WattsVisionCoordinator,
+        entry: WattsVisionConfigEntry,
+        device: Device,
+        suggested_area: str | None = None,
+    ) -> None:
+        """Initialize the boost duration remaining sensor."""
+
+        super().__init__(coordinator, entry, device, suggested_area)
+
+        # Properties
+        self._attr_unique_id = f"watts_boost_duration_remaining_sensor_{self._id}"
+
+    def _update_entity_from_device(self, device: Device) -> None:
+        """Update the entity's state based on the provided device data."""
+
+        self._attr_native_value = device.boost_duration_remaining.total_seconds()
 
 
 class WattsCentralHVACSettingSensor(WattsCentralUnitEntity, SensorEntity):

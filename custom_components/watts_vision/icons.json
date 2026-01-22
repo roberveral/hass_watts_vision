@@ -9,7 +9,7 @@
               "Off": "mdi:home-thermometer-outline",
               "Comfort": "mdi:weather-sunny",
               "Eco": "mdi:weather-night",
-              "Boost": "mdi:timer-sand",
+              "Boost": "mdi:timer-outline",
               "Anti-Freeze": "mdi:snowflake",
               "Program": "mdi:calendar-clock"
             }
@@ -30,6 +30,9 @@
       },
       "floor_temperature": {
         "default": "mdi:thermometer-lines"
+      },
+      "boost_duration_remaining": {
+        "default": "mdi:timer-sync-outline"
       }
     },
     "number": {
@@ -40,7 +43,7 @@
         "default": "mdi:weather-night"
       },
       "temperature_setting_boost": {
-        "default": "mdi:timer-sand"
+        "default": "mdi:timer-outline"
       },
       "temperature_setting_anti_freeze": {
         "default": "mdi:snowflake"

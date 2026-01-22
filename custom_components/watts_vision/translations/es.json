@@ -95,23 +95,26 @@
       },
       "floor_temperature": {
         "name": "Temperatura del Suelo"
+      },
+      "boost_duration_remaining": {
+        "name": "Boost Restante"
       }
     },
     "number": {
       "temperature_setting_comfort": {
-        "name": "Ajuste Temperatura: Confort"
+        "name": "Confort"
       },
       "temperature_setting_eco": {
-        "name": "Ajuste Temperatura: Eco"
+        "name": "Eco"
       },
       "temperature_setting_boost": {
-        "name": "Ajuste Temperatura: Boost"
+        "name": "Boost"
       },
       "temperature_setting_anti_freeze": {
-        "name": "Ajuste Temperatura: Protección contra Heladas"
+        "name": "Protección contra Heladas"
       },
       "temperature_setting_manual": {
-        "name": "Ajuste Temperatura: Manual"
+        "name": "Manual"
       }
     }
   },

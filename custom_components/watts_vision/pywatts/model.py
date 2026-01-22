@@ -110,6 +110,7 @@ class Device:
     min_set_point: float
     max_set_point: float
     error_code: ErrorCode
+    boost_duration_remaining: timedelta
 
 
 @dataclass
