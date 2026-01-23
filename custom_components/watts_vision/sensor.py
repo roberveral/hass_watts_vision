@@ -259,6 +259,3 @@ class WattsCentralCommunicationSensor(WattsCentralUnitEntity, SensorEntity):
     def _update_entity_from_smart_home(self, smart_home: SmartHome) -> None:
         """Update the entity's state based on the provided smart home data."""
         self._attr_native_value = smart_home.connection_delay.total_seconds()
-
-
-# TODO: add diagnostic sensor for boost time.
