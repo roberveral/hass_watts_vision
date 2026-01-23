@@ -40,7 +40,7 @@ A Home Assistant custom integration for Watts Vision smart heating systems, enab
 1. Open HACS in your Home Assistant instance
 2. Click on the three dots in the top right corner
 3. Select **Custom repositories**
-4. Add this repository URL: `https://github.com/roberveral/hass_watts_vision` (replace with actual repository URL)
+4. Add this repository URL: `roberveral/hass_watts_vision` (replace with actual repository URL)
 5. Select **Integration** as the category
 6. Click **Add**
 7. Find "Watts Vision" in HACS and click **Download**
@@ -213,7 +213,6 @@ This project is licensed under the [Apache 2.0 License](LICENSE.md).
 ## Credits
 
 - **Author**: [@roberveral](https://github.com/roberveral)
-- **Integration Version**: 0.1.0
 - **Home Assistant Domain**: `watts_vision`
 
 Inspired by the work of:

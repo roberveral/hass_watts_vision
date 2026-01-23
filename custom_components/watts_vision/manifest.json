@@ -1,13 +1,14 @@
 {
   "domain": "watts_vision",
   "name": "Watts Vision",
-  "version": "0.1.0",
+  "version": "2026.1.0",
   "codeowners": [
     "@roberveral"
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://www.home-assistant.io/integrations/watts_vision",
+  "documentation": "https://github.com/roberveral/watts_vision",
+  "issue_tracker": "https://github.com/roberveral/watts_vision/issues",
   "homekit": {},
   "integration_type": "hub",
   "iot_class": "cloud_polling",
