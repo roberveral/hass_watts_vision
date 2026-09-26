@@ -197,7 +197,9 @@ def convert_smart_home(
 
     # Calculate current system HVAC setting
     hvac_setting = (
-        HVACSetting.COOL if home_data["param_c_f"] == "f" else HVACSetting.HEAT
+        HVACSetting.COOL
+        if any(d.hvac_setting == HVACSetting.COOL for d in devices)
+        else HVACSetting.HEAT
     )
 
     return SmartHome(

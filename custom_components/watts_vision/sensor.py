@@ -52,7 +52,9 @@ async def async_setup_entry(
                 WattsHVACSettingSensor(coordinator, entry, device, zone.label)
             )
             entities.append(
-                WattsBoostDurationRemainingSensor(coordinator, entry, device, zone.label)
+                WattsBoostDurationRemainingSensor(
+                    coordinator, entry, device, zone.label
+                )
             )
 
     async_add_entities(entities)
