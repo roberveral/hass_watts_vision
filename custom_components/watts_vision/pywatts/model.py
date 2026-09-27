@@ -112,6 +112,50 @@ class Device:
     error_code: ErrorCode
     boost_duration_remaining: timedelta
 
+    def available_modes(self) -> list[Mode]:
+        """Returns the list of [Mode] that this device allows given its current [HVACSetting]."""
+
+        if self.hvac_setting == HVACSetting.HEAT:
+            return [
+                Mode.COMFORT,
+                Mode.ECO,
+                Mode.BOOST,
+                Mode.PROGRAM,
+                Mode.ANTI_FREEZE,
+                Mode.OFF,
+            ]
+        if self.hvac_setting == HVACSetting.COOL:
+            return [Mode.COMFORT, Mode.BOOST, Mode.OFF]
+        return [mode.value for mode in Mode]
+
+    def is_temperature_setting_available(
+        self, temperature_setting: TemperatureSetting
+    ) -> bool:
+        """Checks if the given temperature setting is available in the device."""
+
+        available_modes = self.available_modes()
+        if (
+            temperature_setting == TemperatureSetting.COMFORT
+            and Mode.COMFORT not in available_modes
+        ):
+            return False
+        if (
+            temperature_setting == TemperatureSetting.ECO
+            and Mode.ECO not in available_modes
+        ):
+            return False
+        if (
+            temperature_setting == TemperatureSetting.BOOST
+            and Mode.BOOST not in available_modes
+        ):
+            return False
+        if (
+            temperature_setting == TemperatureSetting.ANTI_FREEZE
+            and Mode.ANTI_FREEZE not in available_modes
+        ):
+            return False
+        return temperature_setting in self.temperature_settings
+
 
 @dataclass
 class Zone:

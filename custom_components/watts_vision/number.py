@@ -6,6 +6,7 @@ independently from the climate entity.
 """
 
 import logging
+from typing import override
 
 from custom_components.watts_vision.utils import clamp
 from homeassistant.components.number import NumberDeviceClass, NumberEntity
@@ -87,11 +88,20 @@ class WattsTemperatureSetting(WattsThermostatEntity, NumberEntity):
     def _update_entity_from_device(self, device: Device) -> None:
         """Update the entity's state based on the provided device data."""
 
+        self._attr_available = device.is_temperature_setting_available(
+            self._temperature_setting
+        )
         self._attr_native_value = device.temperature_settings.get(
             self._temperature_setting
         )
         self._attr_native_min_value = device.min_set_point
         self._attr_native_max_value = device.max_set_point
+
+    @property
+    @override
+    def available(self) -> bool:
+        """Return if entity is available."""
+        return self._attr_available and self.coordinator.last_update_success
 
     async def async_set_native_value(self, value: float) -> None:
         """Set new value to the temperature setting on the thermostat device."""
