@@ -114,10 +114,13 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
 
         # Determine HVAC Mode based on system setting
         self._attr_hvac_mode = HVACMode.OFF
-        if device.mode != Mode.OFF:
-            if device.hvac_setting == HVACSetting.COOL:
+        if device.hvac_setting == HVACSetting.COOL:
+            self._attr_hvac_modes = [HVACMode.COOL, HVACMode.OFF]
+            if device.mode != Mode.OFF:
                 self._attr_hvac_mode = HVACMode.COOL
-            else:
+        else:
+            self._attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
+            if device.mode != Mode.OFF:
                 self._attr_hvac_mode = HVACMode.HEAT
 
         # Determine HVAC Action based on current status
@@ -131,6 +134,7 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
 
         # Determine Preset Mode
         self._attr_preset_mode = device.mode.value
+        self._attr_preset_modes = [mode.value for mode in device.available_modes()]
         self._attr_target_temperature = device.target_temperature
 
         # Extra data for future reference...
