@@ -180,17 +180,11 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
         )
 
         # Optimistically update the hvac mode until the API confirms the change to avoid UI inconsistencies
-        self._attr_hvac_mode = hvac_mode
-        self._attr_preset_mode = mode.value
-        self.async_write_ha_state()
+        # self._attr_hvac_mode = hvac_mode
+        # self._attr_preset_mode = mode.value
+        # self.async_write_ha_state()
 
-        await self._async_execute_watts_command(
-            self._api_client.change_device_mode(
-                self._smart_home_id,
-                self._device_id,
-                mode,
-            )
-        )
+        await self.coordinator.change_device_mode(self._device_id, mode)
 
     async def async_turn_on(self):
         """Turn the entity on.
@@ -246,18 +240,13 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
             )
 
         # Optimistically update the preset mode until the API confirms the change to avoid UI inconsistencies
-        self._attr_preset_mode = preset_mode
-        if preset_mode == Mode.OFF.value:
-            self._attr_hvac_mode = HVACMode.OFF
-        self.async_write_ha_state()
+        # self._attr_preset_mode = preset_mode
+        # if preset_mode == Mode.OFF.value:
+        #     self._attr_hvac_mode = HVACMode.OFF
+        # self.async_write_ha_state()
 
-        await self._async_execute_watts_command(
-            self._api_client.change_device_mode(
-                self._smart_home_id,
-                self._device_id,
-                Mode(preset_mode),
-                **extra_args,
-            )
+        await self.coordinator.change_device_mode(
+            self._device_id, Mode(preset_mode), **extra_args
         )
 
     async def async_set_temperature(self, **kwargs):
@@ -288,14 +277,9 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
         )
 
         # Optimistically update the hvac mode until the API confirms the change to avoid UI inconsistencies
-        self._attr_target_temperature = value
-        self.async_write_ha_state()
+        # self._attr_target_temperature = value
+        # self.async_write_ha_state()
 
-        await self._async_execute_watts_command(
-            self._api_client.change_device_temperature_setting(
-                self._smart_home_id,
-                self._device_id,
-                target_temp_setting,
-                value,
-            )
+        await self.coordinator.change_device_temperature_setting(
+            self._device_id, target_temp_setting, value
         )

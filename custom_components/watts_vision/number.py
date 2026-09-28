@@ -108,15 +108,8 @@ class WattsTemperatureSetting(WattsThermostatEntity, NumberEntity):
 
         value = clamp(value, self.native_min_value, self.native_max_value)
 
-        # Optimistic update so UI is aligned while data is being updated asynchronously
-        self._attr_native_value = value
-        self.async_write_ha_state()
-
-        await self._async_execute_watts_command(
-            self._api_client.change_device_temperature_setting(
-                smart_home_id=self._smart_home_id,
-                device_id=self._device_id,
-                temperature_setting=self._temperature_setting,
-                temperature=value,
-            )
+        await self.coordinator.change_device_temperature_setting(
+            device_id=self._device_id,
+            temperature_setting=self._temperature_setting,
+            temperature=value,
         )
