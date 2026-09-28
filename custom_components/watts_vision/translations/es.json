@@ -36,7 +36,9 @@
         "description": "Configure su integración de Watts Vision",
         "data": {
           "scan_interval": "Intervalo de escaneo",
-          "boost_duration": "Duración del boost"
+          "boost_duration": "Duración del boost",
+          "debounce_duration": "Duración de debounce",
+          "update_delay": "Retraso de actualización"
         }
       }
     },
@@ -48,6 +50,14 @@
       "boost_duration": {
         "title": "Duración del boost",
         "description": "Seleccione la duración durante la cual el modo boost permanece activo al activar el modo."
+      },
+      "debounce_duration": {
+        "title": "Duración de debounce",
+        "description": "Seleccione la ventana de debounce para agregar cambios a un mismo dispositivo en una única llamada al API."
+      },
+      "update_delay": {
+        "title": "Retraso de actualización",
+        "description": "Seleccione el retraso entre actualizaciones a distintos dispositivos contra el API para garantizar un procesamiento secuencial."
       }
     }
   },

@@ -59,7 +59,9 @@ class WattsVisionClient:
     ):
         """Initialize the Watts Vision client."""
         self._api_client = WattsApiClient(session, credentials, base_url, language)
-        self._batcher = WattsDeviceApiBatcher(self._api_client, debounce_delay, queue_delay)
+        self._batcher = WattsDeviceApiBatcher(
+            self._api_client, debounce_delay, queue_delay
+        )
 
     async def async_update_worker(self) -> None:
         """Handles the processing of the device update operations against Watts Vision.
@@ -181,7 +183,11 @@ class WattsVisionClient:
         await self._async_update_device(smart_home_id, device_id, settings, inmediately)
 
     async def _async_update_device(
-        self, smart_home_id: str, device_id: str, settings: dict, inmediately: bool = False
+        self,
+        smart_home_id: str,
+        device_id: str,
+        settings: dict,
+        inmediately: bool = False,
     ) -> None:
         if not inmediately:
             await self._batcher.async_update_device(smart_home_id, device_id, settings)

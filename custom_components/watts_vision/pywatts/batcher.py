@@ -3,6 +3,7 @@
 Handles debouncing and queueing device updates against the API to avoid
 concurrent updates in the system that may get lost.
 """
+
 import asyncio
 import logging
 
@@ -25,6 +26,7 @@ class WattsDeviceApiBatcher:
     concurrently, it sometimes just ignores some of them. Deboncing and queueing allows
     to limit the number of concurrent updates running on the system.
     """
+
     def __init__(
         self,
         client: WattsApiClient,
@@ -87,7 +89,9 @@ class WattsDeviceApiBatcher:
                 # Get final settings for the device
                 settings = self._pending_settings.pop(device_key)
 
-                _LOGGER.debug("Queuing debounced device update to %s: %s", device_key, settings)
+                _LOGGER.debug(
+                    "Queuing debounced device update to %s: %s", device_key, settings
+                )
 
                 # Remove the debounce task from tracking
                 self._debounce_tasks.pop(device_key, None)
@@ -114,7 +118,9 @@ class WattsDeviceApiBatcher:
                 device_key, settings = await self._update_queue.get()
                 smart_home_id, device_id = device_key
             except asyncio.QueueShutDown:
-                _LOGGER.debug("Watts update queue is shutdown and work has finished. Gracefully finishing worker")
+                _LOGGER.debug(
+                    "Watts update queue is shutdown and work has finished. Gracefully finishing worker"
+                )
                 return
 
             _LOGGER.debug("Update task for Watts device %s received", device_key)

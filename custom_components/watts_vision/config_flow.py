@@ -15,9 +15,13 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
     CONF_BOOST_DURATION,
+    CONF_DEBOUNCE_DURATION,
     CONF_SMART_HOME_ID,
+    CONF_UPDATE_DELAY,
     DEFAULT_BOOST_DURATION,
+    DEFAULT_DEBOUNCE_DURATION,
     DEFAULT_SCAN_INTERVAL,
+    DEFAULT_UPDATE_DELAY,
     DOMAIN,
 )
 from .pywatts import WattsVisionClient
@@ -171,6 +175,18 @@ class WattsVisionOptionsFlow(config_entries.OptionsFlowWithReload):
                             selector.DurationSelectorConfig(
                                 enable_day=False, enable_millisecond=False
                             )
+                        ),
+                        vol.Optional(
+                            CONF_DEBOUNCE_DURATION,
+                            default=timedelta_to_dict(DEFAULT_DEBOUNCE_DURATION),
+                        ): selector.DurationSelector(
+                            selector.DurationSelectorConfig(enable_day=False)
+                        ),
+                        vol.Optional(
+                            CONF_UPDATE_DELAY,
+                            default=timedelta_to_dict(DEFAULT_UPDATE_DELAY),
+                        ): selector.DurationSelector(
+                            selector.DurationSelectorConfig(enable_day=False)
                         ),
                     }
                 ),

@@ -8,6 +8,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
 
+from .const import (
+    CONF_DEBOUNCE_DURATION,
+    CONF_UPDATE_DELAY,
+    DEFAULT_DEBOUNCE_DURATION,
+    DEFAULT_UPDATE_DELAY,
+)
 from .coordinator import WattsVisionCoordinator
 from .google_assistant import ClimateModesTrait
 from .pywatts import WattsVisionClient
@@ -43,7 +49,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry) 
     # Create the API client
     credentials = WattsCredentials(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
     session = async_get_clientsession(hass)
-    client = WattsVisionClient(session, credentials)
+    client = WattsVisionClient(
+        session,
+        credentials,
+        debounce_delay=entry.options.get(
+            CONF_DEBOUNCE_DURATION, DEFAULT_DEBOUNCE_DURATION
+        ).total_seconds(),
+        queue_delay=entry.options.get(
+            CONF_UPDATE_DELAY, DEFAULT_UPDATE_DELAY
+        ).total_seconds(),
+    )
 
     # Create the coordinator
     coordinator = WattsVisionCoordinator(hass, entry, client)
@@ -54,7 +69,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry) 
     )
 
     # Store everything in the runtime data
-    entry.runtime_data = WattsData(client=client, coordinator=coordinator, worker_task=task)
+    entry.runtime_data = WattsData(
+        client=client, coordinator=coordinator, worker_task=task
+    )
 
     # Initialize the coordinator (fetch initial data)
     await coordinator.async_config_entry_first_refresh()
