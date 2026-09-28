@@ -169,11 +169,20 @@ class Zone:
     label: str
     devices: list[Device]
 
-    def get_device_by_id(self, device_id: str) -> Device | None:
-        """Get a device in the zone by its ID."""
+    def get_device_by_id(self, id: str) -> Device | None:
+        """Get a device in the zone by its unique ID."""
 
         for device in self.devices:
-            if device.id == device_id:
+            if device.id == id:
+                return device
+
+        return None
+
+    def get_device_by_device_id(self, device_id: str) -> Device | None:
+        """Get a device in the zone by its device ID."""
+
+        for device in self.devices:
+            if device.device_id == device_id:
                 return device
 
         return None
@@ -198,11 +207,20 @@ class SmartHome:
     zones: list[Zone]
     connection_delay: timedelta
 
-    def get_device_by_id(self, device_id: str) -> Device | None:
-        """Get a device in the smart home by its ID."""
+    def get_device_by_id(self, id: str) -> Device | None:
+        """Get a device in the smart home by its unique ID."""
 
         for device in self.devices:
-            if device.id == device_id:
+            if device.id == id:
+                return device
+
+        return None
+
+    def get_device_by_device_id(self, device_id: str) -> Device | None:
+        """Get a device in the smart home by its device ID."""
+
+        for device in self.devices:
+            if device.device_id == device_id:
                 return device
 
         return None

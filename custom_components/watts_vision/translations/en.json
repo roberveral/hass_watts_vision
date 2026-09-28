@@ -36,7 +36,9 @@
         "description": "Configure your Watts Vision integration",
         "data": {
           "scan_interval": "Scan interval",
-          "boost_duration": "Boost duration"
+          "boost_duration": "Boost duration",
+          "debounce_duration": "Debounce duration",
+          "update_delay": "Update delay"
         }
       }
     },
@@ -48,6 +50,14 @@
       "boost_duration": {
         "title": "Boost Duration",
         "description": "Select the duration for which the boost mode remains active when entering the preset."
+      },
+      "debounce_duration": {
+        "title": "Debounce Duration",
+        "description": "Select the debounce window for grouping updates to the same device in a single API action."
+      },
+      "update_delay": {
+        "title": "Update Delay",
+        "description": "Select the delay between updates to different devices against the API to ensure sequential processing."
       }
     }
   },

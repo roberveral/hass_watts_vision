@@ -1,5 +1,6 @@
 """Type definitions for Watts Vision integration."""
 
+from asyncio import Task
 from dataclasses import dataclass
 
 from homeassistant.config_entries import ConfigEntry
@@ -18,6 +19,7 @@ class WattsData:
 
     client: WattsVisionClient
     coordinator: WattsVisionCoordinator
+    worker_task: Task
 
 
 type WattsVisionConfigEntry = ConfigEntry[WattsData]

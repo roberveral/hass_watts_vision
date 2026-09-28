@@ -2,17 +2,20 @@
 
 import logging
 
-from homeassistant.components.google_assistant.trait import (
-    TRAITS,
-    TemperatureSettingTrait,
-)
+from homeassistant.components.google_assistant.trait import TRAITS
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.typing import ConfigType
 
+from .const import (
+    CONF_DEBOUNCE_DURATION,
+    CONF_UPDATE_DELAY,
+    DEFAULT_DEBOUNCE_DURATION,
+    DEFAULT_UPDATE_DELAY,
+)
 from .coordinator import WattsVisionCoordinator
-from .google_assistant import ActiveModeAwareTemperatureSettingTrait, ClimateModesTrait
+from .google_assistant import ClimateModesTrait
 from .pywatts import WattsVisionClient
 from .pywatts.auth import WattsCredentials
 from .types import WattsData, WattsVisionConfigEntry
@@ -30,17 +33,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # Ensure Google Assistant traits are registered
     # Workaround so the integration with Google Assistant supports:
     #   - Preset modes through ModesTrait
-    #   - Active thermostat mode through TemperatureSettingTrait to show HVAC action correctly
     if ClimateModesTrait in TRAITS:
         _LOGGER.debug("Google Assistant ClimateModesTrait loaded.")
-
-    if ActiveModeAwareTemperatureSettingTrait in TRAITS:
-        _LOGGER.debug("Google Assistant ActiveModeAwareTemperatureSettingTrait loaded.")
-        if TemperatureSettingTrait in TRAITS:
-            _LOGGER.debug(
-                "Removing Google Assistant TemperatureSettingTrait to avoid conflicts."
-            )
-            TRAITS.remove(TemperatureSettingTrait)
 
     return True
 
@@ -55,13 +49,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry) 
     # Create the API client
     credentials = WattsCredentials(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
     session = async_get_clientsession(hass)
-    client = WattsVisionClient(session, credentials)
+    client = WattsVisionClient(
+        session,
+        credentials,
+        debounce_delay=entry.options.get(
+            CONF_DEBOUNCE_DURATION, DEFAULT_DEBOUNCE_DURATION
+        ).total_seconds(),
+        queue_delay=entry.options.get(
+            CONF_UPDATE_DELAY, DEFAULT_UPDATE_DELAY
+        ).total_seconds(),
+    )
 
     # Create the coordinator
     coordinator = WattsVisionCoordinator(hass, entry, client)
 
+    # Create the task to process batched updates
+    task = entry.async_create_background_task(
+        hass, client.async_update_worker(), "watts_vision_update_worker"
+    )
+
     # Store everything in the runtime data
-    entry.runtime_data = WattsData(client=client, coordinator=coordinator)
+    entry.runtime_data = WattsData(
+        client=client, coordinator=coordinator, worker_task=task
+    )
 
     # Initialize the coordinator (fetch initial data)
     await coordinator.async_config_entry_first_refresh()
@@ -78,4 +88,13 @@ async def async_unload_entry(
     """Unloads a config entry that has been removed or disabled."""
 
     _LOGGER.debug("Unloading Watts Vision integration for entry_id: %s", entry.entry_id)
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+    if not await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        return False
+
+    # Graceful shutdown draining pending updates
+    await entry.runtime_data.client.async_worker_shutdown()
+    if entry.runtime_data.worker_task:
+        await entry.runtime_data.worker_task
+
+    return True
