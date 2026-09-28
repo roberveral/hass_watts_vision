@@ -179,11 +179,6 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
             else self.extra_state_attributes.get(ATTR_LAST_WATTS_MODE, Mode.COMFORT)
         )
 
-        # Optimistically update the hvac mode until the API confirms the change to avoid UI inconsistencies
-        # self._attr_hvac_mode = hvac_mode
-        # self._attr_preset_mode = mode.value
-        # self.async_write_ha_state()
-
         await self.coordinator.change_device_mode(self._device_id, mode)
 
     async def async_turn_on(self):
@@ -239,12 +234,6 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
                 else DEFAULT_BOOST_DURATION
             )
 
-        # Optimistically update the preset mode until the API confirms the change to avoid UI inconsistencies
-        # self._attr_preset_mode = preset_mode
-        # if preset_mode == Mode.OFF.value:
-        #     self._attr_hvac_mode = HVACMode.OFF
-        # self.async_write_ha_state()
-
         await self.coordinator.change_device_mode(
             self._device_id, Mode(preset_mode), **extra_args
         )
@@ -275,10 +264,6 @@ class WattsThermostat(WattsThermostatEntity, ClimateEntity):
             self._id,
             target_temp_setting,
         )
-
-        # Optimistically update the hvac mode until the API confirms the change to avoid UI inconsistencies
-        # self._attr_target_temperature = value
-        # self.async_write_ha_state()
 
         await self.coordinator.change_device_temperature_setting(
             self._device_id, target_temp_setting, value
