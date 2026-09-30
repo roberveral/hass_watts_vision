@@ -145,3 +145,8 @@ class WattsDeviceApiBatcher:
 
         if not self._update_queue.empty():
             await self._update_queue.join()
+
+    def size(self) -> int:
+        """Returns the number of updates still to make agasint the Watts Vision system."""
+
+        return self._update_queue.qsize() + len(self._pending_settings)

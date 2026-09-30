@@ -79,6 +79,11 @@ class WattsVisionClient:
 
         await self._batcher.async_worker_shutdown()
 
+    def worker_size(self) -> int:
+        """Returns the number of updates still to make agasint the Watts Vision system."""
+
+        return self._batcher.size()
+
     async def has_valid_credentials(self) -> bool:
         """Check if the provided credentials are valid in the Watts Vision system.
 

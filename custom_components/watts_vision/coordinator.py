@@ -16,7 +16,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import CLIENT_TIMEOUT, CONF_SMART_HOME_ID, DEFAULT_SCAN_INTERVAL
+from .const import (
+    CLIENT_TIMEOUT,
+    CONF_SMART_HOME_ID,
+    CONF_UPDATE_DELAY,
+    DEFAULT_SCAN_INTERVAL,
+    DEFAULT_UPDATE_DELAY,
+    OPTIMISTIC_UPDATE_GRACE_PERIOD,
+)
 from .pywatts import WattsVisionClient
 from .pywatts.errors import WattsVisionAuthenticationError, WattsVisionError
 from .pywatts.model import Device, Mode, SmartHome, TemperatureSetting
@@ -109,7 +116,7 @@ class WattsVisionCoordinator(DataUpdateCoordinator[SmartHome]):
             # Store pending write to apply optimistically
             optimistic_update = _TemperatureSettingOptimisticDeviceUpdate(
                 device_id,
-                datetime.now() + timedelta(seconds=60),
+                datetime.now() + self._update_waiting_time(),
                 temperature_setting,
                 temperature,
             )
@@ -135,13 +142,25 @@ class WattsVisionCoordinator(DataUpdateCoordinator[SmartHome]):
 
             # Store pending write to apply optimistically
             optimistic_update = _ModeOptimisticDeviceUpdate(
-                device_id, datetime.now() + timedelta(seconds=60), mode, boost_duration
+                device_id,
+                datetime.now() + self._update_waiting_time(),
+                mode,
+                boost_duration,
             )
             self._pending_updates.append(optimistic_update)
 
             # Set updated data inmediately
             optimistic_update.apply_to_home(self.data)
             self.async_set_updated_data(self.data)
+
+    def _update_waiting_time(self) -> timedelta:
+        queue_delay_config = self.config_entry.options.get(CONF_UPDATE_DELAY)
+        queue_delay = (
+            timedelta(**queue_delay_config)
+            if queue_delay_config
+            else DEFAULT_UPDATE_DELAY
+        )
+        return self.client.worker_size() * queue_delay + OPTIMISTIC_UPDATE_GRACE_PERIOD
 
 
 @dataclass

@@ -36,4 +36,4 @@ ALLOWED_HVAC_TRANSITIONS = {
 # API Constants
 CLIENT_TIMEOUT: int = 10
 API_COMMAND_EXPIRATION: timedelta = timedelta(seconds=20)
-OPTIMISTIC_UPDATE_GRACE_PERIOD: timedelta = timedelta(seconds=90)
+OPTIMISTIC_UPDATE_GRACE_PERIOD: timedelta = timedelta(seconds=60)
