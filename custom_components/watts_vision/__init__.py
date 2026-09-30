@@ -1,5 +1,6 @@
 """The Watts Vision integration."""
 
+from datetime import timedelta
 import logging
 
 from homeassistant.components.google_assistant.trait import TRAITS
@@ -49,15 +50,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: WattsVisionConfigEntry) 
     # Create the API client
     credentials = WattsCredentials(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
     session = async_get_clientsession(hass)
+    debounce_delay_config = entry.options.get(CONF_DEBOUNCE_DURATION)
+    queue_delay_config = entry.options.get(CONF_UPDATE_DELAY)
     client = WattsVisionClient(
         session,
         credentials,
-        debounce_delay=entry.options.get(
-            CONF_DEBOUNCE_DURATION, DEFAULT_DEBOUNCE_DURATION
-        ).total_seconds(),
-        queue_delay=entry.options.get(
-            CONF_UPDATE_DELAY, DEFAULT_UPDATE_DELAY
-        ).total_seconds(),
+        debounce_delay=timedelta(**debounce_delay_config).total_seconds()
+        if debounce_delay_config
+        else DEFAULT_DEBOUNCE_DURATION,
+        queue_delay=timedelta(**queue_delay_config).total_seconds()
+        if queue_delay_config
+        else DEFAULT_UPDATE_DELAY,
     )
 
     # Create the coordinator
